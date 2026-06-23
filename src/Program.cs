@@ -1,16 +1,32 @@
+using System;
+using System.Windows.Forms;
+using TapeAdhesionApp.Core.PLC;
+using TapeAdhesionApp.Core.State;
+using TapeAdhesionApp.UI.Presenters;
+using TapeAdhesionApp.UI.Views;
+
 namespace TapeAdhesionApp;
 
 static class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new Form1());
-    }    
+
+        // Dependencies
+        var plcService = new PlcCommunicationService();
+        var stateMachine = new StateMachine();
+        var mainForm = new MainForm();
+        
+        // Presenter
+        var presenter = new MainPresenter(mainForm, plcService, stateMachine);
+
+        // Run application
+        Application.Run(mainForm);
+        
+        // Cleanup
+        presenter.Dispose();
+        plcService.Dispose();
+    }
 }

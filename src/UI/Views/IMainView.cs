@@ -12,9 +12,12 @@ public interface IMainView
     void UpdateRunningTime(string formattedTime);
     void UpdateSamplePosition(string position);
     void EnableStartButton(bool enable);
+    void AddTestRecord(TapeAdhesionApp.Core.Models.TestRecord record);
+    void InvokeOnUI(Action action);
     
     // Commands
     event EventHandler StartTestClicked;
     event EventHandler StopTestClicked;
     event EventHandler ResetClicked;
+    event EventHandler InputsChanged;
 }

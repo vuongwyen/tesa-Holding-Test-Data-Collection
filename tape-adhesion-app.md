@@ -62,12 +62,12 @@ WINDOWS DESKTOP (Handled by `backend-specialist` for core logic and `frontend-sp
   - **VERIFY:** Pass mock `PlcData` and verify state transitions (IDLE -> RUNNING -> COMPLETED).
 
 ### Phase 3: Ráp nối Giao diện và Xử lý Nghiệp vụ
-- **Task 3.1: MainForm UI Setup & Presenter**
+- **Task 3.1: MainForm UI Setup & Presenter** [x]
   - **Agent:** `frontend-specialist` | **Skill:** `clean-code`
   - **INPUT:** WinForms Designer, MVP Interfaces.
   - **OUTPUT:** `MainForm.cs` (implements `IMainView`) + `MainPresenter.cs`.
   - **VERIFY:** UI controls update when Presenter pushes mock data.
-- **Task 3.2: Polling Loop & Data Sync**
+- **Task 3.2: Polling Loop & Data Sync** [x]
   - **Agent:** `backend-specialist` | **Skill:** `parallel-agents`
   - **INPUT:** `MainPresenter.cs`, `PlcCommunicationService`, `StateMachine`.
   - **OUTPUT:** A background polling loop (using Task/Timer) inside the Presenter/Main that ticks the StateMachine and updates View.
