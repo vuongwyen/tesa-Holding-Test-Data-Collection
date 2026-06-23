@@ -86,8 +86,8 @@ WINDOWS DESKTOP (Handled by `backend-specialist` for core logic and `frontend-sp
   - **VERIFY:** Generates a valid `.xlsx` file preserving template formatting.
 
 ## Phase X: Verification Checklist
-- [ ] **Build:** Solution builds without warnings.
-- [ ] **Tests:** Unit tests for `StateMachine` pass (transitions & debounce).
-- [ ] **Resilience:** App survives network disconnects and reconnects seamlessly.
-- [ ] **UI:** No cross-thread operation exceptions (InvokeRequired handled).
-- [ ] **Data:** SQLite file persists data across restarts.
+- [x] **Build:** Solution builds without warnings.
+- [x] **Tests:** Unit tests for `StateMachine` pass (transitions & debounce).
+- [x] **Resilience:** App survives network disconnects and reconnects seamlessly.
+- [x] **UI:** No cross-thread operation exceptions (InvokeRequired handled).
+- [x] **Data:** SQLite file persists data across restarts.

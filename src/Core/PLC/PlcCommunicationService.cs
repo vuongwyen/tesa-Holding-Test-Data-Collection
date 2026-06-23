@@ -133,8 +133,23 @@ public class PlcCommunicationService : IPlcService, IDisposable
         }
     }
 
+    private bool _disposedValue;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            if (disposing)
+            {
+                Disconnect();
+            }
+            _disposedValue = true;
+        }
+    }
+
     public void Dispose()
     {
-        Disconnect();
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

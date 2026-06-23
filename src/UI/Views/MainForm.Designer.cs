@@ -34,7 +34,7 @@ partial class MainForm
         // lblBatch
         lblBatch.Text = "BATCH CODE:";
         lblBatch.Location = new Point(20, 30);
-        lblBatch.Size = new Size(180, 40);
+        lblBatch.AutoSize = true;
         lblBatch.Font = largeFont;
 
         // txtBatch
@@ -47,7 +47,7 @@ partial class MainForm
         // lblNart
         lblNart.Text = "NART CODE:";
         lblNart.Location = new Point(20, 80);
-        lblNart.Size = new Size(180, 40);
+        lblNart.AutoSize = true;
         lblNart.Font = largeFont;
 
         // txtNart
@@ -69,28 +69,28 @@ partial class MainForm
         // lblConnectionStatus
         this.lblConnectionStatus.Text = "PLC: OFFLINE";
         this.lblConnectionStatus.Location = new Point(20, 150);
-        this.lblConnectionStatus.Size = new Size(300, 50);
+        this.lblConnectionStatus.AutoSize = true;
         this.lblConnectionStatus.Font = titleFont;
         this.lblConnectionStatus.ForeColor = Color.Red;
 
         // lblMachineState
         this.lblMachineState.Text = "STATE: IDLE";
         this.lblMachineState.Location = new Point(350, 150);
-        this.lblMachineState.Size = new Size(400, 50);
+        this.lblMachineState.AutoSize = true;
         this.lblMachineState.Font = titleFont;
         this.lblMachineState.ForeColor = Color.Gold;
 
         // lblRunningTime
         this.lblRunningTime.Text = "TIME: 0 ms";
         this.lblRunningTime.Location = new Point(20, 220);
-        this.lblRunningTime.Size = new Size(300, 50);
+        this.lblRunningTime.AutoSize = true;
         this.lblRunningTime.Font = titleFont;
         this.lblRunningTime.ForeColor = Color.DeepSkyBlue;
 
         // lblPosition
         this.lblPosition.Text = "VD110: 0 | VD368: 0";
         this.lblPosition.Location = new Point(350, 220);
-        this.lblPosition.Size = new Size(450, 50);
+        this.lblPosition.AutoSize = true;
         this.lblPosition.Font = titleFont;
         this.lblPosition.ForeColor = Color.LightGray;
 

@@ -8,9 +8,10 @@ using TapeAdhesionApp.Core.Models;
 
 namespace TapeAdhesionApp.Data.Database;
 
-public class TestRepository
+public class TestRepository : IDisposable
 {
     private readonly string _connectionString;
+    private bool _disposedValue;
 
     public TestRepository()
     {
@@ -90,5 +91,20 @@ public class TestRepository
         using var connection = new SqliteConnection(_connectionString);
         string sql = "DELETE FROM Checkpoints";
         await connection.ExecuteAsync(sql);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
+        {
+            // Tạm thời không có unmanaged resources để giải phóng, nhưng tuân thủ chuẩn IDisposable.
+            _disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }
