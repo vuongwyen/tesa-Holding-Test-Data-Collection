@@ -5,6 +5,7 @@ public interface IMainView
     // Inputs
     string BatchCode { get; }
     string NartCode { get; }
+    void SetInputs(string batchCode, string nartCode);
     
     // Outputs
     void UpdatePlcConnectionStatus(bool isConnected);

@@ -74,12 +74,12 @@ WINDOWS DESKTOP (Handled by `backend-specialist` for core logic and `frontend-sp
   - **VERIFY:** UI remains responsive while the background loop runs.
 
 ### Phase 4: Lưu trữ Cục bộ và Xuất Báo cáo
-- **Task 4.1: SQLite Database Integration**
+- **Task 4.1: SQLite Database Integration** [x]
   - **Agent:** `database-architect` | **Skill:** `database-design`
   - **INPUT:** `TestRecord` object.
   - **OUTPUT:** `SQLiteDbContext` and repository to save records when StateMachine reaches `COMPLETED` and Checkpoints every 5s during `RUNNING`.
   - **VERIFY:** `app.db` is created and records are inserted correctly.
-- **Task 4.2: ClosedXML Excel Export**
+- **Task 4.2: ClosedXML Excel Export** [x]
   - **Agent:** `backend-specialist` | **Skill:** `clean-code`
   - **INPUT:** SQLite Test Records, Company Excel Template.
   - **OUTPUT:** `ExcelReportService.cs` that writes data to specific cells in `.xlsx` and saves.

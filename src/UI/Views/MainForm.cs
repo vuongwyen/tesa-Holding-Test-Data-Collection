@@ -35,6 +35,15 @@ public partial class MainForm : Form, IMainView
     public string BatchCode => txtBatch.Text;
     public string NartCode => txtNart.Text;
 
+    public void SetInputs(string batchCode, string nartCode)
+    {
+        InvokeOnUI(() => 
+        {
+            txtBatch.Text = batchCode;
+            txtNart.Text = nartCode;
+        });
+    }
+
     // Các Event 
     public event EventHandler? StartTestClicked;
     public event EventHandler? StopTestClicked;
