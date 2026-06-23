@@ -35,8 +35,18 @@ public static class DatabaseInitializer
                     LastUpdate TEXT NOT NULL
                 );";
 
+            string createSettingsTable = @"
+                CREATE TABLE IF NOT EXISTS Settings (
+                    Key TEXT PRIMARY KEY,
+                    Value TEXT NOT NULL
+                );";
+
             connection.Execute(createTestRecordsTable);
             connection.Execute(createCheckpointsTable);
+            connection.Execute(createSettingsTable);
+
+            // Seed default settings
+            connection.Execute("INSERT OR IGNORE INTO Settings (Key, Value) VALUES ('PlcIpAddress', '192.168.0.1')");
         }
     }
 }

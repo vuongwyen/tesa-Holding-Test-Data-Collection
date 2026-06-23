@@ -29,9 +29,10 @@ static class Program
         
         var testRepo = new TapeAdhesionApp.Data.Database.TestRepository();
         var excelService = new TapeAdhesionApp.Data.Export.ExcelReportService();
+        var settingsRepo = new TapeAdhesionApp.Data.Database.SettingsRepository();
         
         // Presenter
-        var presenter = new MainPresenter(mainForm, plcService, stateMachine, testRepo, excelService);
+        var presenter = new MainPresenter(mainForm, plcService, stateMachine, testRepo, excelService, settingsRepo);
 
         // Run application
         Application.Run(mainForm);
@@ -40,6 +41,7 @@ static class Program
         presenter.Dispose();
         plcService.Dispose();
         testRepo.Dispose();
+        settingsRepo.Dispose();
     }
 
     static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)

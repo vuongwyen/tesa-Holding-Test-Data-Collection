@@ -19,6 +19,7 @@ public class MainPresenter : IDisposable
     private readonly IStateMachine _stateMachine;
     private readonly TestRepository _testRepo;
     private readonly ExcelReportService _excelService;
+    private readonly SettingsRepository _settingsRepo;
     
     private CancellationTokenSource? _pollingCts;
     private bool _isTestRunning = false;
@@ -30,19 +31,22 @@ public class MainPresenter : IDisposable
         IPlcService plcService, 
         IStateMachine stateMachine,
         TestRepository testRepo,
-        ExcelReportService excelService)
+        ExcelReportService excelService,
+        SettingsRepository settingsRepo)
     {
         _view = view;
         _plcService = plcService;
         _stateMachine = stateMachine;
         _testRepo = testRepo;
         _excelService = excelService;
+        _settingsRepo = settingsRepo;
         
         // Đăng ký sự kiện từ View
         _view.StartTestClicked += OnStartTestClicked;
         _view.StopTestClicked += OnStopTestClicked;
         _view.ResetClicked += OnResetClicked;
         _view.InputsChanged += OnInputsChanged;
+        _view.SettingsClicked += OnSettingsClicked;
         
         if (_view is Form form)
         {
@@ -87,6 +91,12 @@ public class MainPresenter : IDisposable
         _view.EnableStartButton(hasInputs && !_isTestRunning);
     }
 
+    private void OnSettingsClicked(object? sender, EventArgs e)
+    {
+        using var settingsForm = new SettingsForm(_settingsRepo);
+        settingsForm.ShowDialog();
+    }
+
     private async void OnStartTestClicked(object? sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(_view.BatchCode) || string.IsNullOrWhiteSpace(_view.NartCode)) return;
@@ -98,6 +108,12 @@ public class MainPresenter : IDisposable
         
         // Clear old checkpoints
         await _testRepo.ClearAllCheckpointsAsync();
+        
+        // Chạy Background để không đơ UI
+        var ip = await _settingsRepo.GetSettingAsync("PlcIpAddress");
+        if (string.IsNullOrEmpty(ip)) ip = "192.168.0.1";
+        await _plcService.ConnectAsync(ip);
+        _view.UpdatePlcConnectionStatus(true);
         
         StartPollingLoop();
     }
@@ -129,7 +145,9 @@ public class MainPresenter : IDisposable
         {
             if (!_plcService.IsConnected)
             {
-                await _plcService.ConnectAsync("192.168.0.1"); 
+                var ip = await _settingsRepo.GetSettingAsync("PlcIpAddress");
+                if (string.IsNullOrEmpty(ip)) ip = "192.168.0.1";
+                await _plcService.ConnectAsync(ip); 
             }
 
             while (!token.IsCancellationRequested)

@@ -21,4 +21,5 @@ public interface IMainView
     event EventHandler StopTestClicked;
     event EventHandler ResetClicked;
     event EventHandler InputsChanged;
+    event EventHandler SettingsClicked;
 }

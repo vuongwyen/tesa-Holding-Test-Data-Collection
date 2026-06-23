@@ -112,6 +112,15 @@ partial class MainForm
         this.btnReset.FlatStyle = FlatStyle.Flat;
         this.btnReset.Click += new System.EventHandler(this.BtnReset_Click);
 
+        // btnSettings
+        this.btnSettings.Text = "⚙ CÀI ĐẶT";
+        this.btnSettings.Location = new Point(500, 300);
+        this.btnSettings.Size = new Size(240, 80);
+        this.btnSettings.Font = largeFont;
+        this.btnSettings.BackColor = Color.Teal;
+        this.btnSettings.FlatStyle = FlatStyle.Flat;
+        this.btnSettings.Click += new System.EventHandler(this.BtnSettings_Click);
+
         // dgvHistory
         this.dgvHistory.Location = new Point(20, 400);
         this.dgvHistory.Size = new Size(760, 300);
@@ -136,6 +145,7 @@ partial class MainForm
         this.Controls.Add(this.lblPosition);
         this.Controls.Add(this.btnStop);
         this.Controls.Add(this.btnReset);
+        this.Controls.Add(this.btnSettings);
         this.Controls.Add(this.dgvHistory);
         this.Name = "MainForm";
         this.Text = "Tape Adhesion Testing Machine";

@@ -16,6 +16,7 @@ public partial class MainForm : Form, IMainView
     private Button btnStart = new();
     private Button btnStop = new();
     private Button btnReset = new();
+    private Button btnSettings = new();
     private Label lblConnectionStatus = new();
     private Label lblMachineState = new();
     private Label lblRunningTime = new();
@@ -48,6 +49,7 @@ public partial class MainForm : Form, IMainView
     public event EventHandler? StartTestClicked;
     public event EventHandler? StopTestClicked;
     public event EventHandler? ResetClicked;
+    public event EventHandler? SettingsClicked;
     public event EventHandler? InputsChanged;
 
     // Đảm bảo cập nhật giao diện (Thread-Safety) khi add record từ background thread
@@ -134,5 +136,10 @@ public partial class MainForm : Form, IMainView
     private void BtnReset_Click(object? sender, EventArgs e)
     {
         ResetClicked?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void BtnSettings_Click(object? sender, EventArgs e)
+    {
+        SettingsClicked?.Invoke(this, EventArgs.Empty);
     }
 }
