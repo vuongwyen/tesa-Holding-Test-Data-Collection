@@ -45,12 +45,16 @@ public class PlcConnectionCard : UserControl
         this.lblRackName.Size = new Size(100, 21);
         
         // btnSettings
-        this.btnSettings.Location = new Point(195, 8);
+        this.btnSettings.Location = new Point(190, 6);
         this.btnSettings.Name = "btnSettings";
-        this.btnSettings.Size = new Size(25, 25);
+        this.btnSettings.Size = new Size(30, 30);
         this.btnSettings.Text = "⚙";
-        this.btnSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-        this.btnSettings.UseVisualStyleBackColor = true;
+        this.btnSettings.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
+        this.btnSettings.FlatStyle = FlatStyle.Flat;
+        this.btnSettings.FlatAppearance.BorderSize = 0;
+        this.btnSettings.BackColor = Color.White;
+        this.btnSettings.ForeColor = Color.FromArgb(100, 100, 100);
+        this.btnSettings.UseVisualStyleBackColor = false;
         this.btnSettings.Click += (s, e) => SettingsRequested?.Invoke();
         this.btnSettings.Cursor = Cursors.Hand;
         
@@ -58,13 +62,18 @@ public class PlcConnectionCard : UserControl
         this.txtIpAddress.Location = new Point(10, 40);
         this.txtIpAddress.Name = "txtIpAddress";
         this.txtIpAddress.Size = new Size(120, 23);
+        this.txtIpAddress.BorderStyle = BorderStyle.FixedSingle;
         
         // btnConnect
         this.btnConnect.Location = new Point(140, 39);
         this.btnConnect.Name = "btnConnect";
         this.btnConnect.Size = new Size(80, 25);
         this.btnConnect.Text = "Connect";
-        this.btnConnect.UseVisualStyleBackColor = true;
+        this.btnConnect.FlatStyle = FlatStyle.Flat;
+        this.btnConnect.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.btnConnect.ForeColor = Color.White;
+        this.btnConnect.FlatAppearance.BorderSize = 0;
+        this.btnConnect.UseVisualStyleBackColor = false;
         this.btnConnect.Click += new EventHandler(this.BtnConnect_Click);
         
         // lblStatus

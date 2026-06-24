@@ -34,7 +34,16 @@ public class RackDashboardView : UserControl
         this.dgvMeasurements.AllowUserToDeleteRows = false;
         this.dgvMeasurements.AllowUserToResizeRows = false;
         this.dgvMeasurements.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        this.dgvMeasurements.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        this.dgvMeasurements.EnableHeadersVisualStyles = false;
+        this.dgvMeasurements.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+        this.dgvMeasurements.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.dgvMeasurements.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        this.dgvMeasurements.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        this.dgvMeasurements.ColumnHeadersHeight = 40;
+        this.dgvMeasurements.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        this.dgvMeasurements.GridColor = Color.FromArgb(230, 230, 230);
+        this.dgvMeasurements.BackgroundColor = Color.White;
+        this.dgvMeasurements.BorderStyle = BorderStyle.None;
         this.dgvMeasurements.Dock = DockStyle.Fill;
         this.dgvMeasurements.Location = new Point(0, 0);
         this.dgvMeasurements.MultiSelect = false;

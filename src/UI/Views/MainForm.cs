@@ -89,24 +89,39 @@ public partial class MainForm : Form, IMainView
         var rackId = tabPage.Name;
         
         bool isFlashing = _rackFlashState.ContainsKey(rackId) && _rackFlashState[rackId];
+        bool isSelected = e.State.HasFlag(DrawItemState.Selected);
         
         // Background
-        Brush backBrush = new SolidBrush(e.State.HasFlag(DrawItemState.Selected) ? Color.White : SystemColors.Control);
-        if (isFlashing) backBrush = new SolidBrush(Color.LightGreen);
+        Brush backBrush = new SolidBrush(Color.White);
+        if (isFlashing) backBrush = new SolidBrush(Color.FromArgb(200, 255, 200)); // Light green
         
         e.Graphics.FillRectangle(backBrush, e.Bounds);
 
+        // Tesa Red Color for active tab
+        Color tesaRed = Color.FromArgb(227, 0, 15);
+        Color tesaGray = Color.FromArgb(100, 100, 100);
+
         // Text
-        Brush textBrush = new SolidBrush(e.State.HasFlag(DrawItemState.Selected) ? Color.Black : SystemColors.ControlText);
+        Brush textBrush = new SolidBrush(isSelected ? tesaRed : tesaGray);
+        Font textFont = new Font(e.Font ?? tabControlRacks.Font, isSelected ? FontStyle.Bold : FontStyle.Regular);
+        
         StringFormat format = new StringFormat
         {
             Alignment = StringAlignment.Center,
             LineAlignment = StringAlignment.Center
         };
-        e.Graphics.DrawString(tabPage.Text, e.Font ?? tabControlRacks.Font, textBrush, e.Bounds, format);
+        e.Graphics.DrawString(tabPage.Text, textFont, textBrush, e.Bounds, format);
+
+        // Red Underline for active tab
+        if (isSelected)
+        {
+            using Pen redPen = new Pen(tesaRed, 3);
+            e.Graphics.DrawLine(redPen, e.Bounds.Left, e.Bounds.Bottom - 1, e.Bounds.Right, e.Bounds.Bottom - 1);
+        }
 
         backBrush.Dispose();
         textBrush.Dispose();
+        textFont.Dispose();
     }
 
     // --- IMainView Events ---

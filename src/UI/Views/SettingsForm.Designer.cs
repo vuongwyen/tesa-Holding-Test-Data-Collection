@@ -28,8 +28,8 @@ partial class SettingsForm
         this.SuspendLayout();
 
         // Form Settings
-        this.BackColor = Color.FromArgb(45, 45, 48);
-        this.ForeColor = Color.White;
+        this.BackColor = Color.White;
+        this.ForeColor = Color.Black;
         Font largeFont = new Font("Segoe UI", 12F, FontStyle.Bold);
 
         // dgvAddresses
@@ -40,17 +40,27 @@ partial class SettingsForm
         this.dgvAddresses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         this.dgvAddresses.RowHeadersVisible = false;
         this.dgvAddresses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        this.dgvAddresses.DefaultCellStyle.ForeColor = Color.Black;
-        this.dgvAddresses.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+        this.dgvAddresses.EnableHeadersVisualStyles = false;
+        this.dgvAddresses.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+        this.dgvAddresses.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.dgvAddresses.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        this.dgvAddresses.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        this.dgvAddresses.ColumnHeadersHeight = 35;
+        this.dgvAddresses.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        this.dgvAddresses.GridColor = Color.FromArgb(230, 230, 230);
+        this.dgvAddresses.BackgroundColor = Color.White;
+        this.dgvAddresses.BorderStyle = BorderStyle.None;
         this.dgvAddresses.Font = new Font("Segoe UI", 10F);
 
         // btnSave
-        this.btnSave.Text = "LƯU (SAVE)";
+        this.btnSave.Text = "LƯU";
         this.btnSave.Location = new Point(140, 500);
         this.btnSave.Size = new Size(120, 40);
         this.btnSave.Font = largeFont;
-        this.btnSave.BackColor = Color.SeaGreen;
+        this.btnSave.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.btnSave.ForeColor = Color.White;
         this.btnSave.FlatStyle = FlatStyle.Flat;
+        this.btnSave.FlatAppearance.BorderSize = 0;
         this.btnSave.Click += new System.EventHandler(this.BtnSave_Click);
 
         // btnCancel
@@ -58,8 +68,10 @@ partial class SettingsForm
         this.btnCancel.Location = new Point(280, 500);
         this.btnCancel.Size = new Size(120, 40);
         this.btnCancel.Font = largeFont;
-        this.btnCancel.BackColor = Color.DimGray;
+        this.btnCancel.BackColor = Color.White;
+        this.btnCancel.ForeColor = Color.FromArgb(227, 0, 15); // Tesa Red
         this.btnCancel.FlatStyle = FlatStyle.Flat;
+        this.btnCancel.FlatAppearance.BorderColor = Color.FromArgb(227, 0, 15);
         this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
 
         // SettingsForm

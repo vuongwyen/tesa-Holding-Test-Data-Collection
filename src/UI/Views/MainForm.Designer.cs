@@ -124,27 +124,40 @@ partial class MainForm
         this.cmbFilterRackId.Size = new Size(120, 25);
 
         // btnExportHistory
-        this.btnExportHistory.BackColor = Color.ForestGreen;
+        this.btnExportHistory.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
         this.btnExportHistory.ForeColor = Color.White;
+        this.btnExportHistory.FlatStyle = FlatStyle.Flat;
+        this.btnExportHistory.FlatAppearance.BorderSize = 0;
         this.btnExportHistory.Location = new Point(490, 10);
         this.btnExportHistory.Name = "btnExportHistory";
-        this.btnExportHistory.Size = new Size(120, 30);
-        this.btnExportHistory.Text = "Xuất Excel";
+        this.btnExportHistory.Size = new Size(160, 30);
+        this.btnExportHistory.Text = "Xuất báo cáo (.xlsx)";
         this.btnExportHistory.UseVisualStyleBackColor = false;
 
         // btnDeleteSelected
-        this.btnDeleteSelected.BackColor = Color.Crimson;
-        this.btnDeleteSelected.ForeColor = Color.White;
-        this.btnDeleteSelected.Location = new Point(620, 10);
+        this.btnDeleteSelected.BackColor = Color.White;
+        this.btnDeleteSelected.ForeColor = Color.FromArgb(227, 0, 15); // Tesa Red
+        this.btnDeleteSelected.FlatStyle = FlatStyle.Flat;
+        this.btnDeleteSelected.FlatAppearance.BorderColor = Color.FromArgb(227, 0, 15);
+        this.btnDeleteSelected.Location = new Point(660, 10);
         this.btnDeleteSelected.Name = "btnDeleteSelected";
-        this.btnDeleteSelected.Size = new Size(100, 30);
-        this.btnDeleteSelected.Text = "Xóa chọn";
+        this.btnDeleteSelected.Size = new Size(120, 30);
+        this.btnDeleteSelected.Text = "Xóa mục đã chọn";
         this.btnDeleteSelected.UseVisualStyleBackColor = false;
 
         // dgvHistory
         this.dgvHistory.AllowUserToAddRows = false;
         this.dgvHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        this.dgvHistory.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        this.dgvHistory.EnableHeadersVisualStyles = false;
+        this.dgvHistory.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+        this.dgvHistory.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.dgvHistory.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        this.dgvHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        this.dgvHistory.ColumnHeadersHeight = 40;
+        this.dgvHistory.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        this.dgvHistory.GridColor = Color.FromArgb(230, 230, 230);
+        this.dgvHistory.BackgroundColor = Color.White;
+        this.dgvHistory.BorderStyle = BorderStyle.None;
         this.dgvHistory.Dock = DockStyle.Fill;
         this.dgvHistory.Location = new Point(3, 53);
         this.dgvHistory.Name = "dgvHistory";
@@ -156,7 +169,6 @@ partial class MainForm
 
         // tabPlcConnections
         this.tabPlcConnections.Controls.Add(this.pnlPlcConnections);
-        this.tabPlcConnections.Controls.Add(this.btnSettings);
         this.tabPlcConnections.Location = new Point(4, 26);
         this.tabPlcConnections.Name = "tabPlcConnections";
         this.tabPlcConnections.Padding = new Padding(3);
@@ -181,9 +193,19 @@ partial class MainForm
         this.btnSettings.Text = "Global Settings (DB Path, etc.)";
         this.btnSettings.UseVisualStyleBackColor = true;
 
+        // statusStrip
+        this.statusStrip = new StatusStrip();
+        this.statusStrip.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.lblStatus = new ToolStripStatusLabel();
+        this.lblStatus.ForeColor = Color.White;
+        this.lblStatus.Text = "Server: Chưa kết nối";
+        this.statusStrip.Items.Add(this.lblStatus);
+
         // MainForm
+        this.BackColor = Color.White;
         this.ClientSize = new Size(1200, 800);
         this.Controls.Add(this.tabControlMain);
+        this.Controls.Add(this.statusStrip);
         this.Name = "MainForm";
         this.Text = "Tape Adhesion Test App - Scale Edition";
         this.WindowState = FormWindowState.Maximized;
@@ -195,7 +217,10 @@ partial class MainForm
         this.pnlHistoryToolbar.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).EndInit();
         this.tabPlcConnections.ResumeLayout(false);
+        this.statusStrip.ResumeLayout(false);
+        this.statusStrip.PerformLayout();
         this.ResumeLayout(false);
+        this.PerformLayout();
     }
 
     private TabControl tabControlMain;
@@ -213,4 +238,6 @@ partial class MainForm
     private TabPage tabPlcConnections;
     private FlowLayoutPanel pnlPlcConnections;
     private Button btnSettings;
+    private StatusStrip statusStrip;
+    private ToolStripStatusLabel lblStatus;
 }
