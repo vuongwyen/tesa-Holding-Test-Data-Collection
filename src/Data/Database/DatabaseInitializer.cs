@@ -8,13 +8,21 @@ public static class DatabaseInitializer
 {
     // Pinned to EXE directory so app.db is always the same file,
     // regardless of which working directory the process is launched from.
-    private static readonly string DbFile =
-        Path.Combine(AppContext.BaseDirectory, "app.db");
+    private static readonly string AppDataFolder = 
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "TesaTapeAdhesionApp");
+        
+    private static readonly string DbFile = Path.Combine(AppDataFolder, "app.db");
 
     public static string ConnectionString => $"Data Source={DbFile}";
 
     public static void Initialize()
     {
+        // Đảm bảo thư mục tồn tại trước khi tạo file db
+        if (!Directory.Exists(AppDataFolder))
+        {
+            Directory.CreateDirectory(AppDataFolder);
+        }
+
         // Microsoft.Data.Sqlite creates the file automatically on first open if Mode is not set to ReadOnly
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
