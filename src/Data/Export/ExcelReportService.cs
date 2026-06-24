@@ -12,49 +12,72 @@ public class ExcelReportService
 
     public void EnsureTemplateExists()
     {
-        // For development/demo purposes, if template doesn't exist, we create a dummy one.
-        // In production, the user will place the actual Template_Report.xlsx here.
+        // For multi-sheet logic, we might not need a static template file anymore, 
+        // as we create sheets dynamically based on data. 
+        // But let's just create a basic one so it doesn't fail.
         if (!File.Exists(TemplateFileName))
         {
             using var workbook = new XLWorkbook();
-            var ws = workbook.Worksheets.Add("Report");
-            ws.Cell("A2").Value = "BATCH CODE:";
-            ws.Cell("C2").Value = "NART CODE:";
-            
-            ws.Cell("A4").Value = "Date / Time";
-            ws.Cell("B4").Value = "Drop Time (ms)";
-            
+            var ws = workbook.Worksheets.Add("Template");
+            ws.Cell("A1").Value = "TAPE ADHESION TEST REPORT";
             workbook.SaveAs(TemplateFileName);
         }
     }
 
-    public bool ExportReport(string batchCode, string nartCode, IEnumerable<TestRecord> records, out string savedFilePath)
+    public bool ExportReport(IEnumerable<TestRecord> records, out string savedFilePath)
     {
-        savedFilePath = $"Report_{batchCode}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        savedFilePath = $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
         try
         {
-            EnsureTemplateExists();
+            using var workbook = new XLWorkbook();
+            
+            // Group records by RackId
+            var groupedRecords = System.Linq.Enumerable.GroupBy(records, r => string.IsNullOrEmpty(r.RackId) ? "Unknown" : r.RackId);
 
-            // Mở file template thay vì tạo mới
-            using var workbook = new XLWorkbook(TemplateFileName);
-            var ws = workbook.Worksheet(1);
-
-            // Ghi Header
-            ws.Cell("B2").Value = batchCode;
-            ws.Cell("D2").Value = nartCode;
-
-            // Đổ dữ liệu bắt đầu từ dòng 5
-            int currentRow = 5;
-            foreach (var record in records)
+            foreach (var group in groupedRecords)
             {
-                ws.Cell(currentRow, 1).Value = record.CompletedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                ws.Cell(currentRow, 2).Value = record.DropTime;
-                currentRow++;
+                var wsName = group.Key.Length > 31 ? group.Key.Substring(0, 31) : group.Key;
+                var ws = workbook.Worksheets.Add(wsName);
+
+                ws.Cell("A1").Value = $"TAPE ADHESION TEST REPORT - {group.Key}";
+                
+                ws.Cell("A3").Value = "Date / Time";
+                ws.Cell("B3").Value = "Rack";
+                ws.Cell("C3").Value = "Floor";
+                ws.Cell("D3").Value = "Hook";
+                ws.Cell("E3").Value = "Location";
+                ws.Cell("F3").Value = "Vị trí mẫu";
+                ws.Cell("G3").Value = "Tester";
+                ws.Cell("H3").Value = "Batch Code";
+                ws.Cell("I3").Value = "Nart Code";
+                ws.Cell("J3").Value = "Thời gian (Phút)";
+                ws.Cell("K3").Value = "PLC Value (Raw)";
+
+                int currentRow = 4;
+                foreach (var record in group)
+                {
+                    ws.Cell(currentRow, 1).Value = record.CompletedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    ws.Cell(currentRow, 2).Value = record.RackId;
+                    ws.Cell(currentRow, 3).Value = record.Floor;
+                    ws.Cell(currentRow, 4).Value = record.HookIndex;
+                    ws.Cell(currentRow, 5).Value = record.Location;
+                    ws.Cell(currentRow, 6).Value = record.SamplePosition;
+                    ws.Cell(currentRow, 7).Value = record.Tester;
+                    ws.Cell(currentRow, 8).Value = record.BatchCode;
+                    ws.Cell(currentRow, 9).Value = record.NartCode;
+                    ws.Cell(currentRow, 10).Value = Math.Round(record.DropTime / 60000.0, 2);
+                    ws.Cell(currentRow, 11).Value = record.PlcValue;
+                    currentRow++;
+                }
+
+                ws.Columns().AdjustToContents();
             }
 
-            // Căn chỉnh tự động
-            ws.Columns().AdjustToContents();
+            if (workbook.Worksheets.Count == 0)
+            {
+                workbook.Worksheets.Add("Empty Report");
+            }
 
             workbook.SaveAs(savedFilePath);
             return true;

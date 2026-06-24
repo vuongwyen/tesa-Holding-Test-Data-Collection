@@ -3,116 +3,91 @@ using TapeAdhesionApp.Core.Models;
 
 namespace TapeAdhesionApp.Core.State;
 
-public class StateMachine : IStateMachine
+public enum HookState
 {
-    public MachineState CurrentState { get; private set; } = MachineState.IDLE;
+    Idle,
+    Running,
+    Completed
+}
+
+public class TestCompletedEventArgs : EventArgs
+{
+    public string HookId { get; set; } = string.Empty;
+    public uint DropTime { get; set; }
+    public uint LastValue { get; set; }
+    public DateTime CompletedAt { get; set; }
+}
+
+public class StateMachine
+{
+    public HookState CurrentState { get; private set; } = HookState.Idle;
+    public string HookId { get; }
+    
     public event EventHandler<TestCompletedEventArgs>? OnTestCompleted;
 
-    private uint _lastVariable110;
-    private uint _lastVariable368;
-    
-    // Bộ đếm thời gian cho chức năng lọc nhiễu (Debounce)
-    private DateTime? _debounceStartTime;
-    private DateTime? _debounceStopTime;
+    private uint _lastValue = 0;
+    private int _unchangedCycles = 0;
+    private const int DebounceStopThreshold = 3;
 
-    // Ngưỡng thời gian xác nhận thay đổi là thật, không phải nhiễu (1 giây)
-    private readonly TimeSpan DebounceStartThreshold = TimeSpan.FromSeconds(1);
-    private readonly TimeSpan DebounceStopThreshold = TimeSpan.FromSeconds(1);
-
-    public void Tick(PlcData data)
+    public StateMachine(string hookId)
     {
-        if (data == null || !data.IsConnected)
-        {
-            // Bỏ qua nếu mất kết nối. Cơ chế Crash Recovery (Checkpoint) sẽ xử lý khôi phục sau.
-            return;
-        }
+        HookId = hookId;
+    }
 
-        // Kiểm tra xem vị trí mẫu / thông số đang test có thay đổi liên tục không
-        bool isPositionChanging = data.Variable110 != _lastVariable110 || data.Variable368 != _lastVariable368;
-        
-        // Tín hiệu tạ rơi từ biến Bool hoặc một điều kiện tương tự
-        bool isDropDetected = data.DropSignal;
-
+    public void ProcessValue(uint currentValue)
+    {
         switch (CurrentState)
         {
-            case MachineState.IDLE:
-                if (isPositionChanging)
+            case HookState.Idle:
+                if (currentValue > 0)
                 {
-                    // Bắt đầu thấy có sự thay đổi, chuyển sang chờ xác nhận (tránh nhiễu tay chạm)
-                    CurrentState = MachineState.DEBOUNCE_START;
-                    _debounceStartTime = data.Timestamp;
+                    CurrentState = HookState.Running;
+                    _unchangedCycles = 0;
                 }
                 break;
 
-            case MachineState.DEBOUNCE_START:
-                if (!isPositionChanging)
+            case HookState.Running:
+                if (currentValue == 0)
                 {
-                    // Không còn thay đổi nữa -> Là nhiễu (False Start), quay về IDLE
-                    CurrentState = MachineState.IDLE;
-                    _debounceStartTime = null;
+                    CurrentState = HookState.Idle;
+                    _unchangedCycles = 0;
                 }
-                else
+                else if (currentValue > _lastValue)
                 {
-                    // Nếu vẫn tiếp tục thay đổi và vượt qua ngưỡng 1 giây
-                    if (_debounceStartTime.HasValue && (data.Timestamp - _debounceStartTime.Value) >= DebounceStartThreshold)
+                    _unchangedCycles = 0;
+                }
+                else if (currentValue == _lastValue)
+                {
+                    _unchangedCycles++;
+                    if (_unchangedCycles >= DebounceStopThreshold)
                     {
-                        CurrentState = MachineState.RUNNING;
-                        _debounceStartTime = null;
-                        // (Ở Giai đoạn 4 sẽ gọi logic lưu Checkpoint Database tại đây định kỳ mỗi 5s)
-                    }
-                }
-                break;
-
-            case MachineState.RUNNING:
-                if (isDropDetected)
-                {
-                    // Bắt đầu phát hiện tạ rơi, chờ xác nhận (tránh tạ nảy lên nảy xuống)
-                    CurrentState = MachineState.DEBOUNCE_STOP;
-                    _debounceStopTime = data.Timestamp;
-                }
-                break;
-
-            case MachineState.DEBOUNCE_STOP:
-                if (!isDropDetected)
-                {
-                    // Tín hiệu tạ rơi bị mất -> Là do nảy/nhiễu, quay lại trạng thái RUNNING
-                    CurrentState = MachineState.RUNNING;
-                    _debounceStopTime = null;
-                }
-                else
-                {
-                    // Nếu tín hiệu tạ rơi ổn định vượt quá ngưỡng 1 giây
-                    if (_debounceStopTime.HasValue && (data.Timestamp - _debounceStopTime.Value) >= DebounceStopThreshold)
-                    {
-                        CurrentState = MachineState.COMPLETED;
-                        _debounceStopTime = null;
-                        
-                        // Kích hoạt sự kiện hoàn thành bài test để UI hoặc Database bắt lấy
+                        CurrentState = HookState.Completed;
                         OnTestCompleted?.Invoke(this, new TestCompletedEventArgs
                         {
-                            FinalDropTime = data.DropTime,
-                            CompletedAt = data.Timestamp
+                            HookId = this.HookId,
+                            DropTime = currentValue,
+                            LastValue = currentValue,
+                            CompletedAt = DateTime.Now
                         });
                     }
                 }
                 break;
 
-            case MachineState.COMPLETED:
-                // Đợi lệnh Reset từ giao diện hoặc PLC để quay về IDLE
+            case HookState.Completed:
+                if (currentValue == 0)
+                {
+                    CurrentState = HookState.Idle;
+                }
                 break;
         }
 
-        // Cập nhật giá trị cũ để so sánh cho chu kỳ Tick tiếp theo
-        _lastVariable110 = data.Variable110;
-        _lastVariable368 = data.Variable368;
+        _lastValue = currentValue;
     }
 
     public void Reset()
     {
-        CurrentState = MachineState.IDLE;
-        _debounceStartTime = null;
-        _debounceStopTime = null;
-        _lastVariable110 = 0;
-        _lastVariable368 = 0;
+        CurrentState = HookState.Idle;
+        _unchangedCycles = 0;
+        _lastValue = 0;
     }
 }

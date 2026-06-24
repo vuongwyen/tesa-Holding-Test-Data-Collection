@@ -1,25 +1,26 @@
+using System;
+using System.Collections.Generic;
+using TapeAdhesionApp.Core.Models;
+
 namespace TapeAdhesionApp.UI.Views;
 
 public interface IMainView
 {
-    // Inputs
-    string BatchCode { get; }
-    string NartCode { get; }
-    void SetInputs(string batchCode, string nartCode);
+    // Events
+    event Action<string, string> ConnectRackClicked;
+    event Action<string> DisconnectRackClicked;
+    event Action SettingsClicked;
+    event Action LoadHistory;
+    event Action<List<int>> DeleteSelectedRecordsClicked;
+    event Action<string?> ExportHistoryClicked; // string? rackId (null = all)
+
+    // Methods
+    void UpdateRackConnectionStatus(string rackId, bool isConnected);
+    void UpdateMeasurementRow(string rackId, int floor, int hookIndex, uint value, string state);
+    void FlashRackTab(string rackId);
+    MeasurementRow? GetRowData(string rackId, int floor, int hookIndex);
     
-    // Outputs
-    void UpdatePlcConnectionStatus(bool isConnected);
-    void UpdateMachineState(string stateName);
-    void UpdateRunningTime(string formattedTime);
-    void UpdateSamplePosition(string position);
-    void EnableStartButton(bool enable);
-    void AddTestRecord(TapeAdhesionApp.Core.Models.TestRecord record);
-    void InvokeOnUI(Action action);
-    
-    // Commands
-    event EventHandler StartTestClicked;
-    event EventHandler StopTestClicked;
-    event EventHandler ResetClicked;
-    event EventHandler InputsChanged;
-    event EventHandler SettingsClicked;
+    // History
+    void LoadHistoryData(IEnumerable<TestRecord> records);
+    void AddTestRecord(TestRecord record);
 }

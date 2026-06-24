@@ -18,140 +18,199 @@ partial class MainForm
 
     private void InitializeComponent()
     {
-        Label lblBatch = new Label();
-        Label lblNart = new Label();
+        this.tabControlMain = new TabControl();
+        this.tabDashboard = new TabPage();
+        this.tabControlRacks = new TabControl();
+        this.tabHistory = new TabPage();
+        this.pnlHistoryToolbar = new Panel();
+        this.lblSearch = new Label();
+        this.txtSearchHistory = new TextBox();
+        this.lblFilter = new Label();
+        this.cmbFilterRackId = new ComboBox();
+        this.btnDeleteSelected = new Button();
+        this.btnExportHistory = new Button();
+        this.dgvHistory = new DataGridView();
+        this.tabPlcConnections = new TabPage();
+        this.pnlPlcConnections = new FlowLayoutPanel();
+        this.btnSettings = new Button();
 
+        this.tabControlMain.SuspendLayout();
+        this.tabDashboard.SuspendLayout();
+        this.tabHistory.SuspendLayout();
+        this.pnlHistoryToolbar.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).BeginInit();
+        this.tabPlcConnections.SuspendLayout();
         this.SuspendLayout();
 
-        // Thiết kế Giao diện Công nghiệp (Industrial UI)
-        Font largeFont = new Font("Segoe UI", 16F, FontStyle.Bold);
-        Font titleFont = new Font("Segoe UI", 24F, FontStyle.Bold);
+        // tabControlMain
+        this.tabControlMain.Controls.Add(this.tabDashboard);
+        this.tabControlMain.Controls.Add(this.tabHistory);
+        this.tabControlMain.Controls.Add(this.tabPlcConnections);
+        this.tabControlMain.Dock = DockStyle.Fill;
+        this.tabControlMain.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+        this.tabControlMain.Location = new Point(0, 0);
+        this.tabControlMain.Name = "tabControlMain";
+        this.tabControlMain.SelectedIndex = 0;
+        this.tabControlMain.Size = new Size(1200, 800);
+        this.tabControlMain.TabIndex = 0;
+
+        // tabDashboard
+        this.tabDashboard.Controls.Add(this.tabControlRacks);
+        this.tabDashboard.Location = new Point(4, 26);
+        this.tabDashboard.Name = "tabDashboard";
+        this.tabDashboard.Padding = new Padding(3);
+        this.tabDashboard.Size = new Size(1192, 770);
+        this.tabDashboard.TabIndex = 0;
+        this.tabDashboard.Text = "Dashboard";
+        this.tabDashboard.UseVisualStyleBackColor = true;
+
+        // tabControlRacks
+        this.tabControlRacks.Dock = DockStyle.Fill;
+        this.tabControlRacks.Location = new Point(3, 3);
+        this.tabControlRacks.Name = "tabControlRacks";
+        this.tabControlRacks.SelectedIndex = 0;
+        this.tabControlRacks.Size = new Size(1186, 764);
+        this.tabControlRacks.TabIndex = 0;
+        this.tabControlRacks.DrawMode = TabDrawMode.OwnerDrawFixed;
+        this.tabControlRacks.DrawItem += TabControlRacks_DrawItem;
+
+        // tabHistory
+        this.tabHistory.Controls.Add(this.dgvHistory);
+        this.tabHistory.Controls.Add(this.pnlHistoryToolbar);
+        this.tabHistory.Location = new Point(4, 26);
+        this.tabHistory.Name = "tabHistory";
+        this.tabHistory.Padding = new Padding(3);
+        this.tabHistory.Size = new Size(1192, 770);
+        this.tabHistory.TabIndex = 1;
+        this.tabHistory.Text = "Lịch sử Test / Xuất Báo Cáo";
+        this.tabHistory.UseVisualStyleBackColor = true;
+
+        // pnlHistoryToolbar
+        this.pnlHistoryToolbar.Controls.Add(this.lblSearch);
+        this.pnlHistoryToolbar.Controls.Add(this.txtSearchHistory);
+        this.pnlHistoryToolbar.Controls.Add(this.lblFilter);
+        this.pnlHistoryToolbar.Controls.Add(this.cmbFilterRackId);
+        this.pnlHistoryToolbar.Controls.Add(this.btnExportHistory);
+        this.pnlHistoryToolbar.Controls.Add(this.btnDeleteSelected);
+        this.pnlHistoryToolbar.Dock = DockStyle.Top;
+        this.pnlHistoryToolbar.Location = new Point(3, 3);
+        this.pnlHistoryToolbar.Name = "pnlHistoryToolbar";
+        this.pnlHistoryToolbar.Size = new Size(1186, 50);
+        this.pnlHistoryToolbar.TabIndex = 0;
+
+        // lblSearch
+        this.lblSearch.AutoSize = true;
+        this.lblSearch.Location = new Point(10, 15);
+        this.lblSearch.Name = "lblSearch";
+        this.lblSearch.Size = new Size(67, 19);
+        this.lblSearch.Text = "Tìm kiếm:";
+
+        // txtSearchHistory
+        this.txtSearchHistory.Location = new Point(80, 12);
+        this.txtSearchHistory.Name = "txtSearchHistory";
+        this.txtSearchHistory.Size = new Size(200, 25);
         
-        this.BackColor = Color.FromArgb(45, 45, 48); // Màu tối công nghiệp
-        this.ForeColor = Color.White;
+        // lblFilter
+        this.lblFilter.AutoSize = true;
+        this.lblFilter.Location = new Point(300, 15);
+        this.lblFilter.Name = "lblFilter";
+        this.lblFilter.Size = new Size(41, 19);
+        this.lblFilter.Text = "Rack:";
         
-        // lblBatch
-        lblBatch.Text = "BATCH CODE:";
-        lblBatch.Location = new Point(20, 30);
-        lblBatch.AutoSize = true;
-        lblBatch.Font = largeFont;
+        // cmbFilterRackId
+        this.cmbFilterRackId.DropDownStyle = ComboBoxStyle.DropDownList;
+        this.cmbFilterRackId.Location = new Point(350, 12);
+        this.cmbFilterRackId.Name = "cmbFilterRackId";
+        this.cmbFilterRackId.Size = new Size(120, 25);
 
-        // txtBatch
-        this.txtBatch.Location = new Point(200, 25);
-        this.txtBatch.Size = new Size(300, 40);
-        this.txtBatch.Font = largeFont;
-        this.txtBatch.TextChanged += new System.EventHandler(this.TxtInput_TextChanged);
-        this.txtBatch.Enter += new System.EventHandler(this.TxtInput_Enter);
+        // btnExportHistory
+        this.btnExportHistory.BackColor = Color.ForestGreen;
+        this.btnExportHistory.ForeColor = Color.White;
+        this.btnExportHistory.Location = new Point(490, 10);
+        this.btnExportHistory.Name = "btnExportHistory";
+        this.btnExportHistory.Size = new Size(120, 30);
+        this.btnExportHistory.Text = "Xuất Excel";
+        this.btnExportHistory.UseVisualStyleBackColor = false;
 
-        // lblNart
-        lblNart.Text = "NART CODE:";
-        lblNart.Location = new Point(20, 80);
-        lblNart.AutoSize = true;
-        lblNart.Font = largeFont;
-
-        // txtNart
-        this.txtNart.Location = new Point(200, 75);
-        this.txtNart.Size = new Size(300, 40);
-        this.txtNart.Font = largeFont;
-        this.txtNart.TextChanged += new System.EventHandler(this.TxtInput_TextChanged);
-        this.txtNart.Enter += new System.EventHandler(this.TxtInput_Enter);
-
-        // btnStart
-        this.btnStart.Text = "START / CONNECT";
-        this.btnStart.Location = new Point(520, 25);
-        this.btnStart.Size = new Size(250, 90);
-        this.btnStart.Font = largeFont;
-        this.btnStart.BackColor = Color.SeaGreen;
-        this.btnStart.FlatStyle = FlatStyle.Flat;
-        this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
-
-        // lblConnectionStatus
-        this.lblConnectionStatus.Text = "PLC: OFFLINE";
-        this.lblConnectionStatus.Location = new Point(20, 150);
-        this.lblConnectionStatus.AutoSize = true;
-        this.lblConnectionStatus.Font = titleFont;
-        this.lblConnectionStatus.ForeColor = Color.Red;
-
-        // lblMachineState
-        this.lblMachineState.Text = "STATE: IDLE";
-        this.lblMachineState.Location = new Point(350, 150);
-        this.lblMachineState.AutoSize = true;
-        this.lblMachineState.Font = titleFont;
-        this.lblMachineState.ForeColor = Color.Gold;
-
-        // lblRunningTime
-        this.lblRunningTime.Text = "TIME: 0 ms";
-        this.lblRunningTime.Location = new Point(20, 220);
-        this.lblRunningTime.AutoSize = true;
-        this.lblRunningTime.Font = titleFont;
-        this.lblRunningTime.ForeColor = Color.DeepSkyBlue;
-
-        // lblPosition
-        this.lblPosition.Text = "VD110: 0 | VD368: 0";
-        this.lblPosition.Location = new Point(350, 220);
-        this.lblPosition.AutoSize = true;
-        this.lblPosition.Font = titleFont;
-        this.lblPosition.ForeColor = Color.LightGray;
-
-        // btnStop
-        this.btnStop.Text = "STOP TEST";
-        this.btnStop.Location = new Point(20, 300);
-        this.btnStop.Size = new Size(200, 80);
-        this.btnStop.Font = largeFont;
-        this.btnStop.BackColor = Color.Crimson;
-        this.btnStop.FlatStyle = FlatStyle.Flat;
-        this.btnStop.Click += new System.EventHandler(this.BtnStop_Click);
-
-        // btnReset
-        this.btnReset.Text = "RESET STATUS";
-        this.btnReset.Location = new Point(240, 300);
-        this.btnReset.Size = new Size(240, 80);
-        this.btnReset.Font = largeFont;
-        this.btnReset.BackColor = Color.DimGray;
-        this.btnReset.FlatStyle = FlatStyle.Flat;
-        this.btnReset.Click += new System.EventHandler(this.BtnReset_Click);
-
-        // btnSettings
-        this.btnSettings.Text = "⚙ CÀI ĐẶT";
-        this.btnSettings.Location = new Point(500, 300);
-        this.btnSettings.Size = new Size(240, 80);
-        this.btnSettings.Font = largeFont;
-        this.btnSettings.BackColor = Color.Teal;
-        this.btnSettings.FlatStyle = FlatStyle.Flat;
-        this.btnSettings.Click += new System.EventHandler(this.BtnSettings_Click);
+        // btnDeleteSelected
+        this.btnDeleteSelected.BackColor = Color.Crimson;
+        this.btnDeleteSelected.ForeColor = Color.White;
+        this.btnDeleteSelected.Location = new Point(620, 10);
+        this.btnDeleteSelected.Name = "btnDeleteSelected";
+        this.btnDeleteSelected.Size = new Size(100, 30);
+        this.btnDeleteSelected.Text = "Xóa chọn";
+        this.btnDeleteSelected.UseVisualStyleBackColor = false;
 
         // dgvHistory
-        this.dgvHistory.Location = new Point(20, 400);
-        this.dgvHistory.Size = new Size(760, 300);
-        this.dgvHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         this.dgvHistory.AllowUserToAddRows = false;
+        this.dgvHistory.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        this.dgvHistory.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        this.dgvHistory.Dock = DockStyle.Fill;
+        this.dgvHistory.Location = new Point(3, 53);
+        this.dgvHistory.Name = "dgvHistory";
         this.dgvHistory.ReadOnly = true;
-        this.dgvHistory.RowTemplate.Height = 40;
-        this.dgvHistory.DefaultCellStyle.Font = new Font("Segoe UI", 12F);
-        this.dgvHistory.DefaultCellStyle.ForeColor = Color.Black;
-        this.dgvHistory.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        this.dgvHistory.RowTemplate.Height = 30;
+        this.dgvHistory.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        this.dgvHistory.Size = new Size(1186, 714);
+        this.dgvHistory.TabIndex = 1;
+
+        // tabPlcConnections
+        this.tabPlcConnections.Controls.Add(this.pnlPlcConnections);
+        this.tabPlcConnections.Controls.Add(this.btnSettings);
+        this.tabPlcConnections.Location = new Point(4, 26);
+        this.tabPlcConnections.Name = "tabPlcConnections";
+        this.tabPlcConnections.Padding = new Padding(3);
+        this.tabPlcConnections.Size = new Size(1192, 770);
+        this.tabPlcConnections.TabIndex = 2;
+        this.tabPlcConnections.Text = "Quản lý PLC";
+        this.tabPlcConnections.UseVisualStyleBackColor = true;
+
+        // pnlPlcConnections
+        this.pnlPlcConnections.Dock = DockStyle.Fill;
+        this.pnlPlcConnections.Location = new Point(3, 43);
+        this.pnlPlcConnections.Name = "pnlPlcConnections";
+        this.pnlPlcConnections.Size = new Size(1186, 724);
+        this.pnlPlcConnections.TabIndex = 0;
+
+        // btnSettings
+        this.btnSettings.Dock = DockStyle.Top;
+        this.btnSettings.Location = new Point(3, 3);
+        this.btnSettings.Name = "btnSettings";
+        this.btnSettings.Size = new Size(1186, 40);
+        this.btnSettings.TabIndex = 1;
+        this.btnSettings.Text = "Global Settings (DB Path, etc.)";
+        this.btnSettings.UseVisualStyleBackColor = true;
 
         // MainForm
-        this.ClientSize = new Size(800, 720);
-        this.Controls.Add(lblBatch);
-        this.Controls.Add(this.txtBatch);
-        this.Controls.Add(lblNart);
-        this.Controls.Add(this.txtNart);
-        this.Controls.Add(this.btnStart);
-        this.Controls.Add(this.lblConnectionStatus);
-        this.Controls.Add(this.lblMachineState);
-        this.Controls.Add(this.lblRunningTime);
-        this.Controls.Add(this.lblPosition);
-        this.Controls.Add(this.btnStop);
-        this.Controls.Add(this.btnReset);
-        this.Controls.Add(this.btnSettings);
-        this.Controls.Add(this.dgvHistory);
+        this.ClientSize = new Size(1200, 800);
+        this.Controls.Add(this.tabControlMain);
         this.Name = "MainForm";
-        this.Text = "Tape Adhesion Testing Machine";
-        this.StartPosition = FormStartPosition.CenterScreen;
+        this.Text = "Tape Adhesion Test App - Scale Edition";
+        this.WindowState = FormWindowState.Maximized;
 
+        this.tabControlMain.ResumeLayout(false);
+        this.tabDashboard.ResumeLayout(false);
+        this.tabHistory.ResumeLayout(false);
+        this.pnlHistoryToolbar.ResumeLayout(false);
+        this.pnlHistoryToolbar.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).EndInit();
+        this.tabPlcConnections.ResumeLayout(false);
         this.ResumeLayout(false);
     }
+
+    private TabControl tabControlMain;
+    private TabPage tabDashboard;
+    private TabControl tabControlRacks;
+    private TabPage tabHistory;
+    private Panel pnlHistoryToolbar;
+    private Label lblSearch;
+    private TextBox txtSearchHistory;
+    private Label lblFilter;
+    private ComboBox cmbFilterRackId;
+    private Button btnDeleteSelected;
+    private Button btnExportHistory;
+    private DataGridView dgvHistory;
+    private TabPage tabPlcConnections;
+    private FlowLayoutPanel pnlPlcConnections;
+    private Button btnSettings;
 }

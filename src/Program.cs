@@ -23,8 +23,7 @@ static class Program
         TapeAdhesionApp.Data.Database.DatabaseInitializer.Initialize();
 
         // Dependencies
-        var plcService = new PlcCommunicationService();
-        var stateMachine = new StateMachine();
+        var plcManager = new PlcManager();
         var mainForm = new MainForm();
         
         var testRepo = new TapeAdhesionApp.Data.Database.TestRepository();
@@ -32,14 +31,14 @@ static class Program
         var settingsRepo = new TapeAdhesionApp.Data.Database.SettingsRepository();
         
         // Presenter
-        var presenter = new MainPresenter(mainForm, plcService, stateMachine, testRepo, excelService, settingsRepo);
+        var presenter = new MainPresenter(mainForm, plcManager, testRepo, excelService, settingsRepo);
 
         // Run application
         Application.Run(mainForm);
         
         // Cleanup
         presenter.Dispose();
-        plcService.Dispose();
+        plcManager.Dispose();
         testRepo.Dispose();
         settingsRepo.Dispose();
     }

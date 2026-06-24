@@ -11,7 +11,13 @@ public class PlcCommunicationService : IPlcService, IDisposable
     private string _ipAddress = string.Empty;
     private bool _isConnecting = false;
 
+    public string RackId { get; }
     public bool IsConnected => _plc != null && _plc.IsConnected;
+
+    public PlcCommunicationService(string rackId)
+    {
+        RackId = rackId;
+    }
 
     public async Task<bool> ConnectAsync(string ipAddress)
     {
@@ -28,8 +34,8 @@ public class PlcCommunicationService : IPlcService, IDisposable
                 _plc = null;
             }
 
-            // Mặc định sử dụng Rack 0, Slot 1 cho S7-200.
-            _plc = new Plc(CpuType.S7200, ipAddress, 0, 1);
+            // Sử dụng chuẩn S7-200 Smart (Phù hợp với thiết bị thực tế tại xưởng)
+            _plc = new Plc(CpuType.S7200Smart, ipAddress, 0, 1);
             
             // Chạy hàm Open trên background thread/task pool để không block UI (tránh UI freeze)
             await Task.Run(() => _plc.Open());
@@ -67,27 +73,25 @@ public class PlcCommunicationService : IPlcService, IDisposable
         {
             return await Task.Run(() =>
             {
-                var data = new PlcData { IsConnected = true };
+                var data = new PlcData(RackId) { IsConnected = true };
                 
-                // Đọc một mảng byte (ví dụ 400 bytes) từ DB1 (tương đương V-Memory trên S7-200)
+                // Đọc 400 bytes từ DB1 (V-Memory trên S7-200) để bao trùm cả VD110 và VD368
                 byte[] buffer = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, 0, 400);
 
-                // Parse giá trị theo các hằng số mapping đã định nghĩa
-                data.MachineState = S7.Net.Types.Boolean.GetValue(buffer[PlcTags.V0_0_MachineState], 0);
-                data.DropSignal = S7.Net.Types.Boolean.GetValue(buffer[PlcTags.V0_1_DropSignal], 1);
-                
-                // Đọc DWord (4 bytes)
-                data.DropTime = S7.Net.Types.DWord.FromByteArray(
-                    new byte[] { buffer[PlcTags.VD10_DropTime], buffer[PlcTags.VD10_DropTime + 1], buffer[PlcTags.VD10_DropTime + 2], buffer[PlcTags.VD10_DropTime + 3] }
-                );
-                
-                data.Variable110 = S7.Net.Types.DWord.FromByteArray(
-                    new byte[] { buffer[PlcTags.VD110_Variable], buffer[PlcTags.VD110_Variable + 1], buffer[PlcTags.VD110_Variable + 2], buffer[PlcTags.VD110_Variable + 3] }
-                );
-
-                data.Variable368 = S7.Net.Types.DWord.FromByteArray(
-                    new byte[] { buffer[PlcTags.VD368_Variable], buffer[PlcTags.VD368_Variable + 1], buffer[PlcTags.VD368_Variable + 2], buffer[PlcTags.VD368_Variable + 3] }
-                );
+                for (int i = 0; i < 64; i++)
+                {
+                    int address = PlcTags.HookAddresses[i];
+                    if (address >= 0 && address + 3 < buffer.Length)
+                    {
+                        data.Hooks[i].CurrentValue = S7.Net.Types.DWord.FromByteArray(
+                            new byte[] { buffer[address], buffer[address + 1], buffer[address + 2], buffer[address + 3] }
+                        );
+                    }
+                    else
+                    {
+                        data.Hooks[i].CurrentValue = 0; // Dummy
+                    }
+                }
 
                 return data;
             });
@@ -96,22 +100,22 @@ public class PlcCommunicationService : IPlcService, IDisposable
         {
             Console.WriteLine($"[PLC Read Error] {ex.Message}");
             // Mất kết nối đột ngột, trả về đối tượng có cờ IsConnected = false để StateMachine bỏ qua hoặc UI báo lỗi
-            return new PlcData { IsConnected = false };
+            return new PlcData(RackId) { IsConnected = false };
         }
     }
 
     private async Task<PlcData?> TryAutoReconnectAsync()
     {
         if (_isConnecting || string.IsNullOrEmpty(_ipAddress)) 
-            return new PlcData { IsConnected = false };
+            return new PlcData(RackId) { IsConnected = false };
 
-        Console.WriteLine("[PLC] Mất kết nối! Đang thử kết nối lại (Auto-Reconnect)...");
+        Console.WriteLine($"[PLC {RackId}] Mất kết nối! Đang thử kết nối lại (Auto-Reconnect)...");
         
         // Trễ 2 giây để tránh làm quá tải module Wi-Fi của PLC, đây là cấu hình an toàn cho mạng nhà máy
         await Task.Delay(2000);
         
         await ConnectAsync(_ipAddress);
-        return new PlcData { IsConnected = IsConnected };
+        return new PlcData(RackId) { IsConnected = IsConnected };
     }
 
     public async Task<bool> WriteBitAsync(int byteAddress, int bitAddress, bool value)
