@@ -9,26 +9,32 @@ public static class PlcTags
     // The Data Block number corresponding to V-Memory for S7-200
     public const int VMemoryDataBlock = 1;
 
-    // Array of VD addresses for the 64 hooks per Rack (4 floors * 16 hooks).
-    // Using -1 as a placeholder for unknown addresses.
-    public static readonly int[] HookAddresses = new int[64];
+    // Dictionary of VD addresses for the 64 hooks per Rack (Key = RackId).
+    public static readonly Dictionary<string, int[]> HookAddressesByRack = new();
 
-    static PlcTags()
+    public static int[] GetAddresses(string rackId)
     {
-        // Khởi tạo toàn bộ mảng với giá trị -1
-        for (int i = 0; i < 64; i++)
+        if (!HookAddressesByRack.ContainsKey(rackId))
         {
-            HookAddresses[i] = -1;
+            var defaults = new int[64];
+            for (int i = 0; i < 64; i++) defaults[i] = -1;
+            HookAddressesByRack[rackId] = defaults;
         }
+        return HookAddressesByRack[rackId];
     }
 
-    public static void LoadAddresses(int[] newAddresses)
+    public static void LoadAddresses(string rackId, int[] newAddresses)
     {
         if (newAddresses != null && newAddresses.Length == 64)
         {
+            if (!HookAddressesByRack.ContainsKey(rackId))
+            {
+                HookAddressesByRack[rackId] = new int[64];
+            }
+            
             for (int i = 0; i < 64; i++)
             {
-                HookAddresses[i] = newAddresses[i];
+                HookAddressesByRack[rackId][i] = newAddresses[i];
             }
         }
     }

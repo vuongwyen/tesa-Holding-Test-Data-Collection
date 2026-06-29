@@ -23,28 +23,21 @@ public class PlcCommunicationService : IPlcService, IDisposable
     {
         if (_isConnecting) return false;
         
-        _ipAddress = ipAddress;
         _isConnecting = true;
-
+        _ipAddress = ipAddress;
+        
         try
         {
-            if (_plc != null)
+            await Task.Run(() =>
             {
-                _plc.Close();
-                _plc = null;
-            }
+                _plc = new Plc(CpuType.S7200Smart, ipAddress, 0, 1); // Sử dụng chuẩn S7-200 Smart
+                _plc.Open();
+            });
 
-            // Sử dụng chuẩn S7-200 Smart (Phù hợp với thiết bị thực tế tại xưởng)
-            _plc = new Plc(CpuType.S7200Smart, ipAddress, 0, 1);
-            
-            // Chạy hàm Open trên background thread/task pool để không block UI (tránh UI freeze)
-            await Task.Run(() => _plc.Open());
-            
-            return _plc.IsConnected;
+            return IsConnected;
         }
         catch (Exception ex)
         {
-            // TODO: Ghi log ra file local (Offline Log)
             Console.WriteLine($"[PLC Connect Error] {ex.Message}");
             return false;
         }
@@ -75,22 +68,33 @@ public class PlcCommunicationService : IPlcService, IDisposable
             {
                 var data = new PlcData(RackId) { IsConnected = true };
                 
-                // Đọc 400 bytes từ DB1 (V-Memory trên S7-200) để bao trùm cả VD110 và VD368
-                byte[] buffer = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, 0, 400);
+                int[] addresses = PlcTags.GetAddresses(RackId);
+                int maxAddress = 0;
+                for (int i = 0; i < 64; i++)
+                {
+                    if (addresses[i] > maxAddress)
+                        maxAddress = addresses[i];
+                }
+
+                // Read exactly up to maxAddress + 4 to cover all configured tags
+                int bytesToRead = maxAddress + 4;
+                if (bytesToRead < 4) bytesToRead = 4; // minimum
+
+                byte[] buffer = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, 0, bytesToRead);
 
                 for (int i = 0; i < 64; i++)
                 {
-                    int address = PlcTags.HookAddresses[i];
+                    int address = addresses[i];
+                    uint currentValue = 0;
+
                     if (address >= 0 && address + 3 < buffer.Length)
                     {
-                        data.Hooks[i].CurrentValue = S7.Net.Types.DWord.FromByteArray(
+                        currentValue = S7.Net.Types.DWord.FromByteArray(
                             new byte[] { buffer[address], buffer[address + 1], buffer[address + 2], buffer[address + 3] }
                         );
                     }
-                    else
-                    {
-                        data.Hooks[i].CurrentValue = 0; // Dummy
-                    }
+
+                    data.Hooks[i].CurrentValue = currentValue;
                 }
 
                 return data;
@@ -134,6 +138,23 @@ public class PlcCommunicationService : IPlcService, IDisposable
         {
             Console.WriteLine($"[PLC Write Error] {ex.Message}");
             return false;
+        }
+    }
+
+    public async Task<byte[]?> ReadRawBytesAsync(int startAddress, int length)
+    {
+        if (!IsConnected) return null;
+        try
+        {
+            return await Task.Run(() => 
+            {
+                return _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, startAddress, length);
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[PLC ReadRaw Error] {ex.Message}");
+            return null;
         }
     }
 

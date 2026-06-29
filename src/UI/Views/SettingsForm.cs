@@ -10,13 +10,16 @@ namespace TapeAdhesionApp.UI.Views;
 public partial class SettingsForm : Form
 {
     private readonly SettingsRepository _settingsRepo;
+    private readonly string _rackId;
     private BindingList<AddressRow> _rows;
 
-    public SettingsForm(SettingsRepository settingsRepo)
+    public SettingsForm(SettingsRepository settingsRepo, string rackId)
     {
         _settingsRepo = settingsRepo;
+        _rackId = rackId;
         _rows = new BindingList<AddressRow>();
         InitializeComponent();
+        this.Text = $"Cấu hình PLC - {rackId}";
     }
 
     private async void SettingsForm_Load(object sender, EventArgs e)
@@ -38,7 +41,7 @@ public partial class SettingsForm : Form
 
         try
         {
-            var addresses = await _settingsRepo.GetPlcAddressesAsync();
+            var addresses = await _settingsRepo.GetPlcAddressesAsync(_rackId);
             for (int i = 0; i < 64; i++)
             {
                 int floor = (i / 16) + 1;
@@ -58,6 +61,69 @@ public partial class SettingsForm : Form
         }
     }
 
+    private void BtnBulkImport_Click(object sender, EventArgs e)
+    {
+        var inputForm = new Form
+        {
+            Text = "Nhập Sỉ Cấu Hình (Bulk Import)",
+            Size = new Size(400, 500),
+            StartPosition = FormStartPosition.CenterParent
+        };
+        
+        var txtInput = new TextBox
+        {
+            Multiline = true,
+            Dock = DockStyle.Fill,
+            ScrollBars = ScrollBars.Vertical,
+            Text = "Dán dữ liệu từ Excel vào đây (Ví dụ: L1P1  110)\nHoặc cấu trúc: S4L1P1 110\n"
+        };
+        
+        var btnApply = new Button { Text = "Áp dụng", Dock = DockStyle.Bottom, Height = 40, BackColor = Color.FromArgb(0, 165, 217), ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+        btnApply.Click += (s, args) =>
+        {
+            try
+            {
+                int matchCount = 0;
+                var lines = txtInput.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    // Match pattern like L1P1 110 or S4L1P1 110
+                    var match = System.Text.RegularExpressions.Regex.Match(line, @"L(\d+)P(\d+)\s+(\d+)");
+                    if (match.Success)
+                    {
+                        int floor = int.Parse(match.Groups[1].Value);
+                        int hook = int.Parse(match.Groups[2].Value);
+                        string vdAddress = match.Groups[3].Value;
+                        
+                        if (floor >= 1 && floor <= 4 && hook >= 1 && hook <= 16)
+                        {
+                            int index = (floor - 1) * 16 + (hook - 1);
+                            _rows[index].Address = vdAddress;
+                            matchCount++;
+                        }
+                    }
+                }
+                MessageBox.Show($"Đã gán {matchCount} địa chỉ thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                dgvAddresses.Refresh();
+                inputForm.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi parse dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        };
+
+        inputForm.Controls.Add(txtInput);
+        inputForm.Controls.Add(btnApply);
+        inputForm.ShowDialog();
+    }
+
+    private void BtnScanner_Click(object sender, EventArgs e)
+    {
+        using var scannerForm = new ScannerForm(_rackId, "192.168.2.1"); // TODO: Pass IP dynamically if needed
+        scannerForm.ShowDialog();
+    }
+
     private async void BtnSave_Click(object sender, EventArgs e)
     {
         int[] addresses = new int[64];
@@ -70,7 +136,6 @@ public partial class SettingsForm : Form
             }
             else
             {
-                // Lọc lấy phần số nếu user gõ chữ (ví dụ "VD368" -> "368")
                 string numericPart = new string(System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(val, char.IsDigit)));
                 if (int.TryParse(numericPart, out int num))
                 {
@@ -85,8 +150,8 @@ public partial class SettingsForm : Form
 
         try
         {
-            await _settingsRepo.SavePlcAddressesAsync(addresses);
-            PlcTags.LoadAddresses(addresses);
+            await _settingsRepo.SavePlcAddressesAsync(_rackId, addresses);
+            PlcTags.LoadAddresses(_rackId, addresses);
             MessageBox.Show("Lưu cấu hình thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Close();
         }

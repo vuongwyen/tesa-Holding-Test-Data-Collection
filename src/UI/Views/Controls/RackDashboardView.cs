@@ -100,23 +100,23 @@ public class RackDashboardView : UserControl
         {
             var row = _rows[e.RowIndex];
             
-            // Format PLC Value (ms) to Minutes
+            // Format PLC Value (100ms units) to Minutes
             if (dgvMeasurements.Columns[e.ColumnIndex].DataPropertyName == "PlcValue" && e.Value is uint msValue)
             {
-                e.Value = (msValue / 60000.0).ToString("F2");
+                e.Value = (msValue / 600.0).ToString("F2");
                 e.FormattingApplied = true;
             }
 
             // Apply Row Color based on State
             if (row.State == "RUNNING")
             {
-                e.CellStyle.BackColor = Color.Gold;
+                e.CellStyle.BackColor = Color.LightGreen;
                 e.CellStyle.ForeColor = Color.Black;
             }
             else if (row.State == "COMPLETED")
             {
-                e.CellStyle.BackColor = Color.LightGreen;
-                e.CellStyle.ForeColor = Color.Black;
+                e.CellStyle.BackColor = Color.FromArgb(227, 0, 15); // Tesa Red
+                e.CellStyle.ForeColor = Color.White;
             }
             else
             {

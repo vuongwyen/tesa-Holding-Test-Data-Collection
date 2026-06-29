@@ -73,8 +73,11 @@ public class MainPresenter : IDisposable
         var history = await _testRepo.GetAllTestRecordsAsync();
         _view.LoadHistoryData(history);
         
-        var addresses = await _settingsRepo.GetPlcAddressesAsync();
-        PlcTags.LoadAddresses(addresses);
+        foreach (var rackId in _rackIds)
+        {
+            var addresses = await _settingsRepo.GetPlcAddressesAsync(rackId);
+            PlcTags.LoadAddresses(rackId, addresses);
+        }
     }
 
     private async void OnConnectRackClicked(string rackId, string ipAddress)
@@ -166,23 +169,8 @@ public class MainPresenter : IDisposable
                 
                 if (rowData != null)
                 {
-                    bool hasInputs = !string.IsNullOrWhiteSpace(rowData.Nart) || !string.IsNullOrWhiteSpace(rowData.Batch);
-                    
-                    // Lôgic Auto-Start: Nếu giá trị > 0 và có dữ liệu nhập vào, tự chuyển sang RUNNING
-                    if (hookData.CurrentValue > 0 && sm.CurrentState == HookState.Idle && hasInputs)
-                    {
-                        sm.ProcessValue(hookData.CurrentValue); // Force to Running
-                    }
-                    else if (sm.CurrentState != HookState.Idle)
-                    {
-                        // Continue processing normally
-                        sm.ProcessValue(hookData.CurrentValue);
-                    }
-                    else
-                    {
-                        // Reset if no inputs and idle (just in case)
-                        sm.Reset();
-                    }
+                    // Luôn luôn xử lý giá trị để cập nhật trạng thái UI (Xanh/Đỏ/Trắng)
+                    sm.ProcessValue(hookData.CurrentValue);
 
                     // Map state enum to string
                     string stateStr = "IDLE";
@@ -210,6 +198,10 @@ public class MainPresenter : IDisposable
 
         var rowData = _view.GetRowData(rackId, floor, hookIndex);
         if (rowData == null) return;
+
+        // Chỉ lưu DB nếu người dùng đã điền Nart hoặc Batch
+        bool hasInputs = !string.IsNullOrWhiteSpace(rowData.Nart) || !string.IsNullOrWhiteSpace(rowData.Batch);
+        if (!hasInputs) return;
 
         var record = new TestRecord
         {
@@ -252,9 +244,9 @@ public class MainPresenter : IDisposable
         }
     }
 
-    private void OnSettingsClicked()
+    private void OnSettingsClicked(string rackId)
     {
-        using var settingsForm = new SettingsForm(_settingsRepo);
+        using var settingsForm = new SettingsForm(_settingsRepo, rackId);
         settingsForm.ShowDialog();
     }
 

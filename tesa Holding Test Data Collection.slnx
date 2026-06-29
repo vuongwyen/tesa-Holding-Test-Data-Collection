@@ -1,4 +1,6 @@
 <Solution>
-  <Project Path="Application/Application.vdproj" Type="Installer" />
+  <Project Path="Application/Application.vdproj" Type="Installer">
+    <Build />
+  </Project>
   <Project Path="src/TapeAdhesionApp.csproj" />
 </Solution>

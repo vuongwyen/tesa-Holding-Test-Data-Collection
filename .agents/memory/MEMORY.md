@@ -2,6 +2,7 @@
 
 ## User
 - [user] Automation Software Engineer, C#, WinForms, Siemens PLC → user-preferences.md
+- [user] Pronouns: Call user "bố", refer to self as "con". No "Dạ thưa anh/chị" or "tôi" → user-preferences.md
 
 ## Project
 - [project] Always create a new dedicated branch for major code changes → project-conventions.md

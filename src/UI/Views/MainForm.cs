@@ -22,7 +22,7 @@ public partial class MainForm : Form, IMainView
         InitializeRacks();
         InitializeHistoryToolbar();
 
-        btnSettings.Click += (s, e) => SettingsClicked?.Invoke();
+        btnSettings.Click += (s, e) => SettingsClicked?.Invoke("");
     }
 
     private void InitializeRacks()
@@ -45,7 +45,7 @@ public partial class MainForm : Form, IMainView
             var card = new PlcConnectionCard(rackId, "192.168.2.1");
             card.ConnectRequested += (id, ip) => ConnectRackClicked?.Invoke(id, ip);
             card.DisconnectRequested += (id) => DisconnectRackClicked?.Invoke(id);
-            card.SettingsRequested += () => SettingsClicked?.Invoke();
+            card.SettingsRequested += () => SettingsClicked?.Invoke(rackId);
             _connectionCards[rackId] = card;
             pnlPlcConnections.Controls.Add(card);
 
@@ -127,7 +127,7 @@ public partial class MainForm : Form, IMainView
     // --- IMainView Events ---
     public event Action<string, string>? ConnectRackClicked;
     public event Action<string>? DisconnectRackClicked;
-    public event Action? SettingsClicked;
+    public event Action<string>? SettingsClicked;
     public event Action? LoadHistory;
     public event Action<List<int>>? DeleteSelectedRecordsClicked;
     public event Action<string?>? ExportHistoryClicked;

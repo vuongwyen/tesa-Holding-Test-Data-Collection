@@ -48,11 +48,11 @@ public class SettingsRepository : IDisposable
         await connection.ExecuteAsync(sql, new { Key = $"PlcIpAddress_{rackId}", Value = ipAddress });
     }
 
-    public async Task<int[]> GetPlcAddressesAsync()
+    public async Task<int[]> GetPlcAddressesAsync(string rackId)
     {
         using var connection = new SqliteConnection(_connectionString);
-        string sql = "SELECT Value FROM Settings WHERE Key = 'PlcAddresses'";
-        var json = await connection.QueryFirstOrDefaultAsync<string>(sql);
+        string sql = "SELECT Value FROM Settings WHERE Key = @Key";
+        var json = await connection.QueryFirstOrDefaultAsync<string>(sql, new { Key = $"PlcAddresses_{rackId}" });
         
         if (string.IsNullOrEmpty(json))
         {
@@ -72,15 +72,15 @@ public class SettingsRepository : IDisposable
         }
     }
 
-    public async Task SavePlcAddressesAsync(int[] addresses)
+    public async Task SavePlcAddressesAsync(string rackId, int[] addresses)
     {
         string json = System.Text.Json.JsonSerializer.Serialize(addresses);
         using var connection = new SqliteConnection(_connectionString);
         string sql = @"
-            INSERT INTO Settings (Key, Value) VALUES ('PlcAddresses', @Value)
+            INSERT INTO Settings (Key, Value) VALUES (@Key, @Value)
             ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value";
         
-        await connection.ExecuteAsync(sql, new { Value = json });
+        await connection.ExecuteAsync(sql, new { Key = $"PlcAddresses_{rackId}", Value = json });
     }
 
     public void Dispose()
