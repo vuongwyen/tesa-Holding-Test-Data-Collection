@@ -12,6 +12,7 @@ partial class ScannerForm
     private Button btnApply;
     private Label lblStatus;
     private Label lblInstruction;
+    private CheckBox chkShowRawData;
 
     protected override void Dispose(bool disposing)
     {
@@ -30,6 +31,7 @@ partial class ScannerForm
         this.btnApply = new Button();
         this.lblStatus = new Label();
         this.lblInstruction = new Label();
+        this.chkShowRawData = new CheckBox();
         this.SuspendLayout();
 
         // Form Settings
@@ -68,15 +70,22 @@ partial class ScannerForm
         this.lblStatus.Font = boldFont;
         this.lblStatus.ForeColor = Color.Gray;
 
+        // chkShowRawData
+        this.chkShowRawData.Text = "Hiển thị Dữ liệu Thô (Chưa qua màng lọc)";
+        this.chkShowRawData.Location = new Point(10, 200);
+        this.chkShowRawData.Size = new Size(500, 25);
+        this.chkShowRawData.Font = regularFont;
+        this.chkShowRawData.Checked = false;
+
         // lstLogs
-        this.lstLogs.Location = new Point(10, 200);
+        this.lstLogs.Location = new Point(10, 230);
         this.lstLogs.Size = new Size(560, 220);
         this.lstLogs.Font = new Font("Consolas", 11F);
         this.lstLogs.IntegralHeight = false;
 
         // btnApply
         this.btnApply.Text = "COPY ĐỊA CHỈ CUỐI";
-        this.btnApply.Location = new Point(420, 430);
+        this.btnApply.Location = new Point(420, 460);
         this.btnApply.Size = new Size(150, 40);
         this.btnApply.Font = boldFont;
         this.btnApply.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
@@ -85,11 +94,12 @@ partial class ScannerForm
         this.btnApply.Click += new System.EventHandler(this.BtnApply_Click);
 
         // ScannerForm
-        this.ClientSize = new Size(580, 480);
+        this.ClientSize = new Size(580, 510);
         this.Controls.Add(this.lblInstruction);
         this.Controls.Add(this.txtAddresses);
         this.Controls.Add(this.btnStartScan);
         this.Controls.Add(this.lblStatus);
+        this.Controls.Add(this.chkShowRawData);
         this.Controls.Add(this.lstLogs);
         this.Controls.Add(this.btnApply);
         this.Name = "ScannerForm";

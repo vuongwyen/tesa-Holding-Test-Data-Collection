@@ -19,14 +19,13 @@ public partial class ScannerForm : Form
     
     public string? LastDiscoveredAddress { get; private set; }
 
-    public ScannerForm(string rackId, string ipAddress)
+    public ScannerForm(string rackId, IPlcService plcManager)
     {
         _rackId = rackId;
-        _plcManager = new PlcCommunicationService(rackId);
-        _ = _plcManager.ConnectAsync(ipAddress); // Connect immediately in background
+        _plcManager = (PlcCommunicationService)plcManager;
         
         InitializeComponent();
-        this.Text = $"PLC Scanner - {rackId} ({ipAddress})";
+        this.Text = $"PLC Scanner - {rackId} (Broker Mode)";
     }
 
     private async void BtnStartScan_Click(object sender, EventArgs e)
@@ -41,6 +40,13 @@ public partial class ScannerForm : Form
         if (addressesToScan.Count == 0)
         {
             MessageBox.Show("Vui lòng nhập ít nhất 1 địa chỉ VD hợp lệ!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var invalidAddresses = addressesToScan.Where(a => a % 4 != 0).ToList();
+        if (invalidAddresses.Count > 0)
+        {
+            MessageBox.Show($"Các địa chỉ sau không hợp lệ (không chia hết cho 4): {string.Join(", ", invalidAddresses)}\nVui lòng sửa lại trước khi quét.", "Lỗi Cấu Hình", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
@@ -99,43 +105,53 @@ public partial class ScannerForm : Form
         txtAddresses.Enabled = true;
     }
 
-    private async Task ScanLoopAsync(List<int> addresses, CancellationToken token)
-    {
-        bool isFirstRun = true;
-        
-        while (!token.IsCancellationRequested && _plcManager.IsConnected)
-        {
-            foreach (var addr in addresses)
-            {
-                if (token.IsCancellationRequested) break;
+        private readonly PlcValueSanitizer _sanitizer = new();
 
-                var bytes = await _plcManager.ReadRawBytesAsync(addr, 4);
-                if (bytes != null && bytes.Length == 4)
+        private async Task ScanLoopAsync(List<int> addresses, CancellationToken token)
+        {
+            bool isFirstRun = true;
+            
+            while (!token.IsCancellationRequested && _plcManager.IsConnected)
+            {
+                foreach (var addr in addresses)
                 {
-                    uint val = S7.Net.Types.DWord.FromByteArray(bytes);
-                    
-                    if (isFirstRun)
+                    if (token.IsCancellationRequested) break;
+
+                    var bytes = await _plcManager.ReadRawBytesAsync(addr, 4);
+                    if (bytes != null && bytes.Length == 4)
                     {
-                        _lastValues[addr] = val;
-                        // Log values even if stationary (only on first scan to avoid flooding)
-                        if (val > 0)
+                        uint rawVal = S7.Net.Types.DWord.FromByteArray(bytes);
+                        var (sanitizedVal, isGood) = _sanitizer.Sanitize(addr, rawVal, isFirstRun);
+
+                        bool showRaw = chkShowRawData.Checked;
+                        uint displayVal = showRaw ? rawVal : sanitizedVal;
+
+                        if (isFirstRun)
                         {
-                            LogStationary(addr, val);
-                        }
-                    }
-                    else
-                    {
-                        if (_lastValues[addr] != val)
-                        {
-                            // Value changed!
-                            uint oldVal = _lastValues[addr];
-                            _lastValues[addr] = val;
+                            _lastValues[addr] = displayVal;
                             
-                            LogChange(addr, oldVal, val);
+                            // Log values even if stationary (only on first scan to avoid flooding)
+                            if (displayVal > 0)
+                            {
+                                if (showRaw || isGood)
+                                    LogStationary(addr, displayVal);
+                            }
+                        }
+                        else
+                        {
+                            if (_lastValues[addr] != displayVal)
+                            {
+                                uint oldVal = _lastValues[addr];
+                                _lastValues[addr] = displayVal;
+
+                                if (showRaw || isGood)
+                                {
+                                    LogChange(addr, oldVal, displayVal);
+                                }
+                            }
                         }
                     }
                 }
-            }
             
             isFirstRun = false;
             await Task.Delay(500, token).ContinueWith(t => { }); // Ignore cancellation exception

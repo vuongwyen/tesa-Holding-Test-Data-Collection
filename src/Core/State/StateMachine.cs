@@ -27,15 +27,17 @@ public class StateMachine
 
     private uint _lastValue = 0;
     private int _unchangedCycles = 0;
-    private const int DebounceStopThreshold = 3;
+    private const int DebounceStopThreshold = 50;
 
     public StateMachine(string hookId)
     {
         HookId = hookId;
     }
 
-    public void ProcessValue(uint currentValue)
+    public void ProcessValue(uint currentValue, bool isGood = true)
     {
+        if (!isGood) return; // Bỏ qua nhịp bị nhiễu, không đếm vào debounce
+
         switch (CurrentState)
         {
             case HookState.Idle:

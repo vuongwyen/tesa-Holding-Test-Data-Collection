@@ -11,12 +11,14 @@ public class PlcConnectionCard : UserControl
     private Label lblStatus;
     private Button btnConnect;
     private Button btnSettings;
+    private Button btnScanner;
 
     public string RackId { get; }
 
     public event Action<string, string>? ConnectRequested;
     public event Action<string>? DisconnectRequested;
     public event Action? SettingsRequested;
+    public event Action? ScannerRequested;
 
     private bool _isConnected;
 
@@ -58,6 +60,21 @@ public class PlcConnectionCard : UserControl
         this.btnSettings.Click += (s, e) => SettingsRequested?.Invoke();
         this.btnSettings.Cursor = Cursors.Hand;
         
+        // btnScanner
+        this.btnScanner = new Button();
+        this.btnScanner.Location = new Point(155, 6);
+        this.btnScanner.Name = "btnScanner";
+        this.btnScanner.Size = new Size(30, 30);
+        this.btnScanner.Text = "🔍";
+        this.btnScanner.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+        this.btnScanner.FlatStyle = FlatStyle.Flat;
+        this.btnScanner.FlatAppearance.BorderSize = 0;
+        this.btnScanner.BackColor = Color.White;
+        this.btnScanner.ForeColor = Color.FromArgb(0, 165, 217); // Tesa Blue
+        this.btnScanner.UseVisualStyleBackColor = false;
+        this.btnScanner.Click += (s, e) => ScannerRequested?.Invoke();
+        this.btnScanner.Cursor = Cursors.Hand;
+        
         // txtIpAddress
         this.txtIpAddress.Location = new Point(10, 40);
         this.txtIpAddress.Name = "txtIpAddress";
@@ -85,6 +102,7 @@ public class PlcConnectionCard : UserControl
         this.lblStatus.Text = "Disconnected";
         this.lblStatus.ForeColor = Color.Red;
 
+        this.Controls.Add(this.btnScanner);
         this.Controls.Add(this.btnSettings);
         this.Controls.Add(this.btnConnect);
         this.Controls.Add(this.lblStatus);

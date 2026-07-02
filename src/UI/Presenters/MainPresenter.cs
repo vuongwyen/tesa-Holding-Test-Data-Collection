@@ -58,6 +58,7 @@ public class MainPresenter : IDisposable
         _view.ConnectRackClicked += OnConnectRackClicked;
         _view.DisconnectRackClicked += OnDisconnectRackClicked;
         _view.SettingsClicked += OnSettingsClicked;
+        _view.ScannerClicked += OnScannerClicked;
         _view.DeleteSelectedRecordsClicked += OnDeleteSelectedRecordsClicked;
         _view.ExportHistoryClicked += OnExportHistoryClicked;
         
@@ -170,7 +171,7 @@ public class MainPresenter : IDisposable
                 if (rowData != null)
                 {
                     // Luôn luôn xử lý giá trị để cập nhật trạng thái UI (Xanh/Đỏ/Trắng)
-                    sm.ProcessValue(hookData.CurrentValue);
+                    sm.ProcessValue(hookData.CurrentValue, hookData.IsGood);
 
                     // Map state enum to string
                     string stateStr = "IDLE";
@@ -248,6 +249,13 @@ public class MainPresenter : IDisposable
     {
         using var settingsForm = new SettingsForm(_settingsRepo, rackId);
         settingsForm.ShowDialog();
+    }
+
+    private void OnScannerClicked(string rackId)
+    {
+        var plcService = _plcManager.GetService(rackId);
+        using var scannerForm = new ScannerForm(rackId, plcService);
+        scannerForm.ShowDialog();
     }
 
     public void Dispose()

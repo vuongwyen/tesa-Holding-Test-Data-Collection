@@ -10,6 +10,7 @@ public class RackDashboardView : UserControl
 {
     private DataGridView dgvMeasurements;
     private BindingList<MeasurementRow> _rows;
+    private bool _isPlcConnected = false;
 
     public string RackId { get; }
 
@@ -108,7 +109,12 @@ public class RackDashboardView : UserControl
             }
 
             // Apply Row Color based on State
-            if (row.State == "RUNNING")
+            if (!_isPlcConnected)
+            {
+                e.CellStyle.BackColor = Color.FromArgb(240, 240, 240);
+                e.CellStyle.ForeColor = Color.Gray;
+            }
+            else if (row.State == "RUNNING")
             {
                 e.CellStyle.BackColor = Color.LightGreen;
                 e.CellStyle.ForeColor = Color.Black;
@@ -132,6 +138,21 @@ public class RackDashboardView : UserControl
         if (index >= 0 && index < _rows.Count)
             return _rows[index];
         return null;
+    }
+
+    public void SetConnectionState(bool isConnected)
+    {
+        if (InvokeRequired)
+        {
+            Invoke(new Action(() => SetConnectionState(isConnected)));
+            return;
+        }
+
+        if (_isPlcConnected != isConnected)
+        {
+            _isPlcConnected = isConnected;
+            dgvMeasurements.Refresh();
+        }
     }
 
     public void UpdateRowState(int floor, int hookIndex, uint value, string state)

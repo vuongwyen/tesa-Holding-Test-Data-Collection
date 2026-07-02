@@ -10,6 +10,9 @@ public class PlcCommunicationService : IPlcService, IDisposable
     private Plc? _plc;
     private string _ipAddress = string.Empty;
     private bool _isConnecting = false;
+    private readonly SemaphoreSlim _plcLock = new SemaphoreSlim(1, 1);
+    private readonly PlcValueSanitizer _sanitizer = new();
+    private bool _isFirstRead = true;
 
     public string RackId { get; }
     public bool IsConnected => _plc != null && _plc.IsConnected;
@@ -28,17 +31,35 @@ public class PlcCommunicationService : IPlcService, IDisposable
         
         try
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                _plc = new Plc(CpuType.S7200Smart, ipAddress, 0, 1); // Sử dụng chuẩn S7-200 Smart
-                _plc.Open();
+                await _plcLock.WaitAsync();
+                try
+                {
+                    _plc = new Plc(CpuType.S7200Smart, ipAddress, 0, 1); // Sử dụng chuẩn S7-200 Smart
+                    _plc.Open();
+                }
+                finally
+                {
+                    _plcLock.Release();
+                }
             });
 
             return IsConnected;
         }
+        catch (PlcException plcEx)
+        {
+            Console.WriteLine($"[PLC Connect Error] Lỗi giao thức S7: {plcEx.Message}");
+            return false;
+        }
+        catch (System.Net.Sockets.SocketException sockEx)
+        {
+            Console.WriteLine($"[PLC Connect Error] Lỗi kết nối mạng: {sockEx.Message}");
+            return false;
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC Connect Error] {ex.Message}");
+            Console.WriteLine($"[PLC Connect Error] Lỗi không xác định: {ex.Message}");
             return false;
         }
         finally
@@ -51,7 +72,15 @@ public class PlcCommunicationService : IPlcService, IDisposable
     {
         if (_plc != null && _plc.IsConnected)
         {
-            _plc.Close();
+            _plcLock.Wait();
+            try
+            {
+                _plc.Close();
+            }
+            finally
+            {
+                _plcLock.Release();
+            }
         }
     }
 
@@ -80,7 +109,27 @@ public class PlcCommunicationService : IPlcService, IDisposable
                 int bytesToRead = maxAddress + 4;
                 if (bytesToRead < 4) bytesToRead = 4; // minimum
 
-                byte[] buffer = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, 0, bytesToRead);
+                byte[] buffer = new byte[bytesToRead];
+                _plcLock.Wait();
+                try
+                {
+                    int offset = 0;
+                    int chunkSize = 200; // PDU size limit for S7-200 Smart is around 240 bytes
+                    while (offset < bytesToRead)
+                    {
+                        int size = Math.Min(chunkSize, bytesToRead - offset);
+                        byte[] chunk = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, offset, size);
+                        if (chunk != null && chunk.Length == size)
+                        {
+                            Array.Copy(chunk, 0, buffer, offset, size);
+                        }
+                        offset += size;
+                    }
+                }
+                finally
+                {
+                    _plcLock.Release();
+                }
 
                 for (int i = 0; i < 64; i++)
                 {
@@ -94,15 +143,35 @@ public class PlcCommunicationService : IPlcService, IDisposable
                         );
                     }
 
-                    data.Hooks[i].CurrentValue = currentValue;
+                    var (sanitizedVal, isGood) = _sanitizer.Sanitize(address, currentValue, _isFirstRead);
+
+                    data.Hooks[i].RawValue = currentValue;
+                    data.Hooks[i].CurrentValue = sanitizedVal;
+                    data.Hooks[i].IsGood = isGood;
                 }
 
+                _isFirstRead = false;
                 return data;
             });
         }
+        catch (PlcException plcEx)
+        {
+            Console.WriteLine($"[PLC Read Error] Lỗi giao thức S7 (Có thể PLC từ chối do quá tải kết nối): {plcEx.Message}");
+            return new PlcData(RackId) { IsConnected = false };
+        }
+        catch (System.Net.Sockets.SocketException sockEx)
+        {
+            Console.WriteLine($"[PLC Read Error] Mất kết nối mạng: {sockEx.Message}");
+            return new PlcData(RackId) { IsConnected = false };
+        }
+        catch (IndexOutOfRangeException idxEx)
+        {
+            Console.WriteLine($"[PLC Read Error] Lỗi ranh giới vùng nhớ (vượt PDU hoặc địa chỉ sai): {idxEx.Message}");
+            return new PlcData(RackId) { IsConnected = true }; // Vẫn keep connection, nhưng mảng bị lỗi
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC Read Error] {ex.Message}");
+            Console.WriteLine($"[PLC Read Error] Lỗi chung: {ex.Message}");
             // Mất kết nối đột ngột, trả về đối tượng có cờ IsConnected = false để StateMachine bỏ qua hoặc UI báo lỗi
             return new PlcData(RackId) { IsConnected = false };
         }
@@ -128,9 +197,17 @@ public class PlcCommunicationService : IPlcService, IDisposable
 
         try
         {
-            await Task.Run(() => 
+            await Task.Run(async () => 
             {
-                _plc!.WriteBit(DataType.DataBlock, PlcTags.VMemoryDataBlock, byteAddress, bitAddress, value);
+                await _plcLock.WaitAsync();
+                try
+                {
+                    _plc!.WriteBit(DataType.DataBlock, PlcTags.VMemoryDataBlock, byteAddress, bitAddress, value);
+                }
+                finally
+                {
+                    _plcLock.Release();
+                }
             });
             return true;
         }
@@ -146,9 +223,17 @@ public class PlcCommunicationService : IPlcService, IDisposable
         if (!IsConnected) return null;
         try
         {
-            return await Task.Run(() => 
+            return await Task.Run(async () => 
             {
-                return _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, startAddress, length);
+                await _plcLock.WaitAsync();
+                try
+                {
+                    return _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, startAddress, length);
+                }
+                finally
+                {
+                    _plcLock.Release();
+                }
             });
         }
         catch (Exception ex)

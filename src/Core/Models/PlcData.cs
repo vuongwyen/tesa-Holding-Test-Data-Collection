@@ -9,6 +9,8 @@ public class HookData
     public int HookIndex { get; set; }
     public string HookId { get; set; } = string.Empty;
     public uint CurrentValue { get; set; }
+    public uint RawValue { get; set; }
+    public bool IsGood { get; set; } = true;
 }
 
 public class PlcData

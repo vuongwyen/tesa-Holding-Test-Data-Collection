@@ -11,8 +11,6 @@ partial class SettingsForm
     private Button btnCancel;
     private Button btnBulkImport;
 
-    private Button btnScanner;
-
     protected override void Dispose(bool disposing)
     {
         if (disposing && (components != null))
@@ -28,7 +26,6 @@ partial class SettingsForm
         this.btnSave = new Button();
         this.btnCancel = new Button();
         this.btnBulkImport = new Button();
-        this.btnScanner = new Button();
         ((System.ComponentModel.ISupportInitialize)(this.dgvAddresses)).BeginInit();
         this.SuspendLayout();
 
@@ -68,20 +65,9 @@ partial class SettingsForm
         this.btnBulkImport.FlatAppearance.BorderColor = Color.Gray;
         this.btnBulkImport.Click += new System.EventHandler(this.BtnBulkImport_Click);
 
-        // btnScanner
-        this.btnScanner.Text = "DÒ MÌN";
-        this.btnScanner.Location = new Point(140, 500);
-        this.btnScanner.Size = new Size(120, 40);
-        this.btnScanner.Font = largeFont;
-        this.btnScanner.BackColor = Color.FromArgb(240, 240, 240);
-        this.btnScanner.ForeColor = Color.Black;
-        this.btnScanner.FlatStyle = FlatStyle.Flat;
-        this.btnScanner.FlatAppearance.BorderColor = Color.Gray;
-        this.btnScanner.Click += new System.EventHandler(this.BtnScanner_Click);
-
         // btnSave
         this.btnSave.Text = "LƯU";
-        this.btnSave.Location = new Point(280, 500);
+        this.btnSave.Location = new Point(140, 500);
         this.btnSave.Size = new Size(120, 40);
         this.btnSave.Font = largeFont;
         this.btnSave.BackColor = Color.FromArgb(0, 165, 217); // Tesa Blue
@@ -92,7 +78,7 @@ partial class SettingsForm
 
         // btnCancel
         this.btnCancel.Text = "HỦY";
-        this.btnCancel.Location = new Point(410, 500);
+        this.btnCancel.Location = new Point(270, 500);
         this.btnCancel.Size = new Size(120, 40);
         this.btnCancel.Font = largeFont;
         this.btnCancel.BackColor = Color.White;
@@ -104,10 +90,9 @@ partial class SettingsForm
         // SettingsForm
         this.ClientSize = new Size(540, 560);
         this.Controls.Add(this.dgvAddresses);
-        this.Controls.Add(this.btnBulkImport);
-        this.Controls.Add(this.btnScanner);
         this.Controls.Add(this.btnSave);
         this.Controls.Add(this.btnCancel);
+        this.Controls.Add(this.btnBulkImport);
         this.Name = "SettingsForm";
         this.Text = "Cấu hình địa chỉ PLC (VD Address)";
         this.StartPosition = FormStartPosition.CenterParent;

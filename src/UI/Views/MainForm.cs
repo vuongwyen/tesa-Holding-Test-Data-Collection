@@ -46,6 +46,7 @@ public partial class MainForm : Form, IMainView
             card.ConnectRequested += (id, ip) => ConnectRackClicked?.Invoke(id, ip);
             card.DisconnectRequested += (id) => DisconnectRackClicked?.Invoke(id);
             card.SettingsRequested += () => SettingsClicked?.Invoke(rackId);
+            card.ScannerRequested += () => ScannerClicked?.Invoke(rackId);
             _connectionCards[rackId] = card;
             pnlPlcConnections.Controls.Add(card);
 
@@ -128,6 +129,7 @@ public partial class MainForm : Form, IMainView
     public event Action<string, string>? ConnectRackClicked;
     public event Action<string>? DisconnectRackClicked;
     public event Action<string>? SettingsClicked;
+    public event Action<string>? ScannerClicked;
     public event Action? LoadHistory;
     public event Action<List<int>>? DeleteSelectedRecordsClicked;
     public event Action<string?>? ExportHistoryClicked;
@@ -211,6 +213,10 @@ public partial class MainForm : Form, IMainView
             if (_connectionCards.TryGetValue(rackId, out var card))
             {
                 card.UpdateStatus(isConnected);
+            }
+            if (_rackDashboards.TryGetValue(rackId, out var dashboard))
+            {
+                dashboard.SetConnectionState(isConnected);
             }
         });
     }

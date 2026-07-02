@@ -10,6 +10,7 @@ public interface IMainView
     event Action<string, string> ConnectRackClicked;
     event Action<string> DisconnectRackClicked;
     event Action<string> SettingsClicked;
+    event Action<string> ScannerClicked;
     event Action LoadHistory;
     event Action<List<int>> DeleteSelectedRecordsClicked;
     event Action<string?> ExportHistoryClicked; // string? rackId (null = all)
