@@ -25,3 +25,10 @@ updated: 2026-06-23
 - Crash Recovery: Checkpoint every 5 seconds (async) during `RUNNING`. Restore `IN_PROGRESS` session on restart.
 - Data Processing: Combine PLC test info + UI input (BATCH, NART via barcode) + Timestamp into SQLite when `COMPLETED`.
 - Code Architecture: Clear separation of layers: UI, State Machine, PLC Service, Database.
+
+## Implemented Features (Progress)
+- **Sanitizer:** `PlcValueSanitizer` handles ghost jumps and double-traps (5s debounce).
+- **Architecture:** Broker pattern via `PlcManager` distributes 1 connection to multiple clients.
+- **Hook State Logic:** Adaptive State Machine handles IDLE -> RUNNING -> COMPLETED with `IsGood` flag check.
+- **Multi-Rack Scaling:** Dynamic UI scaling for up to 3 racks via `PlcConnectionCard` and `RackDashboardView`.
+- **Infrastructure:** SQLite WAL mode enabled, native FileLogger added, DGV DoubleBuffered fixed.
