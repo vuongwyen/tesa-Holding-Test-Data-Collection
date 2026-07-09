@@ -111,16 +111,31 @@ public partial class ScannerForm : Form
         {
             bool isFirstRun = true;
             
+            // Tìm khoảng nhớ chứa tất cả địa chỉ
+            int minAddress = addresses.Min();
+            int maxAddress = addresses.Max();
+            int lengthToRead = maxAddress - minAddress + 4; // Cần đọc đến hết 4 byte của địa chỉ lớn nhất
+
             while (!token.IsCancellationRequested && _plcManager.IsConnected)
             {
-                foreach (var addr in addresses)
-                {
-                    if (token.IsCancellationRequested) break;
+                if (token.IsCancellationRequested) break;
 
-                    var bytes = await _plcManager.ReadRawBytesAsync(addr, 4);
-                    if (bytes != null && bytes.Length == 4)
+                // Hỏi PLC 1 cục duy nhất!
+                var buffer = await _plcManager.ReadRawBytesAsync(minAddress, lengthToRead);
+
+                if (buffer != null && buffer.Length == lengthToRead)
+                {
+                    // Lọc từng giá trị ra từ RAM
+                    foreach (var addr in addresses)
                     {
-                        uint rawVal = S7.Net.Types.DWord.FromByteArray(bytes);
+                        if (token.IsCancellationRequested) break;
+                        
+                        int localOffset = addr - minAddress;
+                        
+                        uint rawVal = S7.Net.Types.DWord.FromByteArray(
+                            new byte[] { buffer[localOffset], buffer[localOffset + 1], buffer[localOffset + 2], buffer[localOffset + 3] }
+                        );
+                        
                         var (sanitizedVal, isGood) = _sanitizer.Sanitize(addr, rawVal, isFirstRun);
 
                         bool showRaw = chkShowRawData.Checked;
@@ -130,11 +145,10 @@ public partial class ScannerForm : Form
                         {
                             _lastValues[addr] = displayVal;
                             
-                            // Log values even if stationary (only on first scan to avoid flooding)
-                            if (displayVal > 0)
+                            // Báo cáo mọi giá trị kể cả bằng 0 trong lần quét đầu tiên
+                            if (showRaw || isGood)
                             {
-                                if (showRaw || isGood)
-                                    LogStationary(addr, displayVal);
+                                LogStationary(addr, displayVal);
                             }
                         }
                         else
@@ -153,10 +167,10 @@ public partial class ScannerForm : Form
                     }
                 }
             
-            isFirstRun = false;
-            await Task.Delay(500, token).ContinueWith(t => { }); // Ignore cancellation exception
+                isFirstRun = false;
+                await Task.Delay(500, token).ContinueWith(t => { }); // Nghỉ nửa giây
+            }
         }
-    }
 
     private void LogChange(int address, uint oldValue, uint newValue)
     {

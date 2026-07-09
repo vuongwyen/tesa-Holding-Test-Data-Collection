@@ -225,10 +225,27 @@ public class PlcCommunicationService : IPlcService, IDisposable
         {
             return await Task.Run(async () => 
             {
+                byte[] buffer = new byte[length];
                 await _plcLock.WaitAsync();
                 try
                 {
-                    return _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, startAddress, length);
+                    int offset = 0;
+                    int chunkSize = 200;
+                    while (offset < length)
+                    {
+                        int size = Math.Min(chunkSize, length - offset);
+                        byte[] chunk = _plc!.ReadBytes(DataType.DataBlock, PlcTags.VMemoryDataBlock, startAddress + offset, size);
+                        if (chunk != null && chunk.Length == size)
+                        {
+                            Array.Copy(chunk, 0, buffer, offset, size);
+                        }
+                        else
+                        {
+                            return null; // Lỗi đọc 1 chunk -> hỏng toàn bộ
+                        }
+                        offset += size;
+                    }
+                    return buffer;
                 }
                 finally
                 {

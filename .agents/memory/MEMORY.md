@@ -6,3 +6,6 @@
 
 ## Project
 - [project] Always create a new dedicated branch for major code changes → project-conventions.md
+
+## Reference
+- [reference] S7.Net API documentation (connection, read/write bytes, structs, conversion) → S7.Net documentation.md
