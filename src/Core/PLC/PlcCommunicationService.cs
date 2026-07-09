@@ -49,17 +49,17 @@ public class PlcCommunicationService : IPlcService, IDisposable
         }
         catch (PlcException plcEx)
         {
-            Console.WriteLine($"[PLC Connect Error] Lỗi giao thức S7: {plcEx.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Connect Error] Lỗi giao thức S7: {plcEx.Message}");
             return false;
         }
         catch (System.Net.Sockets.SocketException sockEx)
         {
-            Console.WriteLine($"[PLC Connect Error] Lỗi kết nối mạng: {sockEx.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Connect Error] Lỗi kết nối mạng: {sockEx.Message}");
             return false;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC Connect Error] Lỗi không xác định: {ex.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Connect Error] Lỗi không xác định: {ex.Message}");
             return false;
         }
         finally
@@ -156,22 +156,22 @@ public class PlcCommunicationService : IPlcService, IDisposable
         }
         catch (PlcException plcEx)
         {
-            Console.WriteLine($"[PLC Read Error] Lỗi giao thức S7 (Có thể PLC từ chối do quá tải kết nối): {plcEx.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Read Error] Lỗi giao thức S7 (Có thể PLC từ chối do quá tải kết nối): {plcEx.Message}");
             return new PlcData(RackId) { IsConnected = false };
         }
         catch (System.Net.Sockets.SocketException sockEx)
         {
-            Console.WriteLine($"[PLC Read Error] Mất kết nối mạng: {sockEx.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Read Error] Mất kết nối mạng: {sockEx.Message}");
             return new PlcData(RackId) { IsConnected = false };
         }
         catch (IndexOutOfRangeException idxEx)
         {
-            Console.WriteLine($"[PLC Read Error] Lỗi ranh giới vùng nhớ (vượt PDU hoặc địa chỉ sai): {idxEx.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Read Error] Lỗi ranh giới vùng nhớ (vượt PDU hoặc địa chỉ sai): {idxEx.Message}");
             return new PlcData(RackId) { IsConnected = true }; // Vẫn keep connection, nhưng mảng bị lỗi
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC Read Error] Lỗi chung: {ex.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Read Error] Lỗi chung: {ex.Message}");
             // Mất kết nối đột ngột, trả về đối tượng có cờ IsConnected = false để StateMachine bỏ qua hoặc UI báo lỗi
             return new PlcData(RackId) { IsConnected = false };
         }
@@ -182,7 +182,7 @@ public class PlcCommunicationService : IPlcService, IDisposable
         if (_isConnecting || string.IsNullOrEmpty(_ipAddress)) 
             return new PlcData(RackId) { IsConnected = false };
 
-        Console.WriteLine($"[PLC {RackId}] Mất kết nối! Đang thử kết nối lại (Auto-Reconnect)...");
+        TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC {RackId}] Mất kết nối! Đang thử kết nối lại (Auto-Reconnect)...");
         
         // Trễ 2 giây để tránh làm quá tải module Wi-Fi của PLC, đây là cấu hình an toàn cho mạng nhà máy
         await Task.Delay(2000);
@@ -213,7 +213,7 @@ public class PlcCommunicationService : IPlcService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC Write Error] {ex.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC Write Error] {ex.Message}");
             return false;
         }
     }
@@ -238,7 +238,7 @@ public class PlcCommunicationService : IPlcService, IDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[PLC ReadRaw Error] {ex.Message}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[PLC ReadRaw Error] {ex.Message}");
             return null;
         }
     }

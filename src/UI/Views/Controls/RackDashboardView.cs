@@ -20,6 +20,7 @@ public class RackDashboardView : UserControl
         _rows = new BindingList<MeasurementRow>();
         
         InitializeComponent();
+        TapeAdhesionApp.UI.Utils.ControlExtensions.EnableDoubleBuffered(dgvMeasurements);
         InitializeGrid();
         PopulateRows();
     }

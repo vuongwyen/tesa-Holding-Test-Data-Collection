@@ -26,6 +26,11 @@ public static class DatabaseInitializer
         // Microsoft.Data.Sqlite creates the file automatically on first open if Mode is not set to ReadOnly
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
+        
+        using var pragmaCmd = connection.CreateCommand();
+        pragmaCmd.CommandText = "PRAGMA journal_mode=WAL;";
+        pragmaCmd.ExecuteNonQuery();
+
         using var command = connection.CreateCommand();
 
         string createTestRecordsTable = @"
@@ -80,5 +85,26 @@ public static class DatabaseInitializer
 
         // Seed default IP - update to actual PLC IP if needed via Settings form
         connection.Execute("INSERT OR IGNORE INTO Settings (Key, Value) VALUES ('PlcIpAddress', '192.168.2.1')");
+    }
+    
+    public static void BackupDatabase()
+    {
+        try
+        {
+            if (File.Exists(DbFile))
+            {
+                string backupFolder = Path.Combine(AppDataFolder, "Backups");
+                if (!Directory.Exists(backupFolder)) Directory.CreateDirectory(backupFolder);
+                string backupFile = Path.Combine(backupFolder, $"app_backup_{DateTime.Now:yyyyMMdd}.db");
+                if (!File.Exists(backupFile)) // Only backup once a day
+                {
+                    File.Copy(DbFile, backupFile, true);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[DB Backup Error] {ex.Message}");
+        }
     }
 }

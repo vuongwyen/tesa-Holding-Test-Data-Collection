@@ -19,6 +19,7 @@ public partial class MainForm : Form, IMainView
     public MainForm()
     {
         InitializeComponent();
+        TapeAdhesionApp.UI.Utils.ControlExtensions.EnableDoubleBuffered(dgvHistory);
         InitializeRacks();
         InitializeHistoryToolbar();
 

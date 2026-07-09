@@ -19,6 +19,7 @@ public partial class SettingsForm : Form
         _rackId = rackId;
         _rows = new BindingList<AddressRow>();
         InitializeComponent();
+        TapeAdhesionApp.UI.Utils.ControlExtensions.EnableDoubleBuffered(dgvAddresses);
         this.Text = $"Cấu hình PLC - {rackId}";
     }
 

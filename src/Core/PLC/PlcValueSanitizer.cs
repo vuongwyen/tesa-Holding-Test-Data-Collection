@@ -28,7 +28,7 @@ public class PlcValueSanitizer
             if (currentValue > AbsoluteMaxThreshold)
             {
                 // Tầng 1: Rác tuyệt đối ở lần đọc đầu
-                Console.WriteLine($"[Sanitizer] Address {address} - Giá trị nền phi lý: {currentValue}. Ép về 0.");
+                TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Sanitizer] Address {address} - Giá trị nền phi lý: {currentValue}. Ép về 0.");
                 _oldValues[address] = 0;
                 _rejectCounters[address] = 0;
                 _justReleasedJump[address] = false;
@@ -88,7 +88,7 @@ public class PlcValueSanitizer
             if (_justReleasedJump.TryGetValue(address, out bool justReleased) && justReleased)
             {
                 // CHẤP NHẬN NGAY LẬP TỨC
-                Console.WriteLine($"[Sanitizer] Address {address} - Thoát bẫy kép (về số thực): {oldValue} -> {currentValue}");
+                TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Sanitizer] Address {address} - Thoát bẫy kép (về số thực): {oldValue} -> {currentValue}");
                 _oldValues[address] = currentValue;
                 _rejectCounters[address] = 0;
                 _justReleasedJump[address] = false;
@@ -112,7 +112,7 @@ public class PlcValueSanitizer
         if (rejects >= ForceReleaseThreshold)
         {
             // Ép BUÔNG (Force Release)
-            Console.WriteLine($"[Sanitizer] Address {address} - BUÔNG sau {rejects} lần chặn. Chấp nhận rác: {oldValue} -> {currentValue}");
+            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Sanitizer] Address {address} - BUÔNG sau {rejects} lần chặn. Chấp nhận rác: {oldValue} -> {currentValue}");
             _oldValues[address] = currentValue;
             _rejectCounters[address] = 0;
             
@@ -125,7 +125,7 @@ public class PlcValueSanitizer
         else
         {
             if (rejects == 1 || rejects % 10 == 0) // Log less frequently
-                Console.WriteLine($"[Sanitizer] Address {address} - {reason}: {oldValue} -> {currentValue} (Từ chối lần {rejects}/{ForceReleaseThreshold})");
+                TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Sanitizer] Address {address} - {reason}: {oldValue} -> {currentValue} (Từ chối lần {rejects}/{ForceReleaseThreshold})");
             
             return (oldValue, false);
         }
