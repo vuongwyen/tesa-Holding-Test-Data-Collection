@@ -66,7 +66,7 @@ public class ExcelReportService
                     ws.Cell(currentRow, 7).Value = record.Tester;
                     ws.Cell(currentRow, 8).Value = record.BatchCode;
                     ws.Cell(currentRow, 9).Value = record.NartCode;
-                    ws.Cell(currentRow, 10).Value = Math.Round(record.DropTime / 60000.0, 2);
+                    ws.Cell(currentRow, 10).Value = Math.Round(record.DropTime / 600.0, 2); // PLC timer là 100ms -> 1 phút = 600 đơn vị
                     ws.Cell(currentRow, 11).Value = record.PlcValue;
                     currentRow++;
                 }
