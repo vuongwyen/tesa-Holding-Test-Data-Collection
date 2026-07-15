@@ -104,7 +104,7 @@ public static class DatabaseInitializer
         }
         catch (Exception ex)
         {
-            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[DB Backup Error] {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[DB Backup Error] {ex.Message}");
         }
     }
 }

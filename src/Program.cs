@@ -19,20 +19,22 @@ static class Program
 
         ApplicationConfiguration.Initialize();
 
-        // Khởi tạo SQLite Database
+        // Initialize dependencies
         TapeAdhesionApp.Data.Database.DatabaseInitializer.Initialize();
-
-        // Dependencies
-        var plcManager = new PlcManager();
-        var mainForm = new MainForm();
-        
         var testRepo = new TapeAdhesionApp.Data.Database.TestRepository();
         var excelService = new TapeAdhesionApp.Data.Export.ExcelReportService();
-        var settingsRepo = new TapeAdhesionApp.Data.Database.SettingsRepository();
-        
-        // Presenter
-        var presenter = new MainPresenter(mainForm, plcManager, testRepo, excelService, settingsRepo);
+        var plcManager = new TapeAdhesionApp.Core.PLC.PlcManager();
 
+        var mainForm = new MainForm();
+        
+        // Presenter orchestrates the logic
+        var presenter = new MainPresenter(
+            mainForm,
+            plcManager,
+            testRepo,
+            excelService
+        );  
+        
         // Run application
         Application.Run(mainForm);
         
@@ -40,7 +42,6 @@ static class Program
         presenter.Dispose();
         plcManager.Dispose();
         testRepo.Dispose();
-        settingsRepo.Dispose();
     }
 
     static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)

@@ -9,13 +9,11 @@ namespace TapeAdhesionApp.UI.Views;
 
 public partial class SettingsForm : Form
 {
-    private readonly SettingsRepository _settingsRepo;
     private readonly string _rackId;
     private BindingList<AddressRow> _rows;
 
-    public SettingsForm(SettingsRepository settingsRepo, string rackId)
+    public SettingsForm(string rackId)
     {
-        _settingsRepo = settingsRepo;
         _rackId = rackId;
         _rows = new BindingList<AddressRow>();
         InitializeComponent();
@@ -42,7 +40,17 @@ public partial class SettingsForm : Form
 
         try
         {
-            var addresses = await _settingsRepo.GetPlcAddressesAsync(_rackId);
+            using var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseInitializer.ConnectionString);
+            var json = await Dapper.SqlMapper.QueryFirstOrDefaultAsync<string>(conn, "SELECT Value FROM Settings WHERE Key = @Key", new { Key = $"PlcAddresses_{_rackId}" });
+            
+            int[] addresses = new int[64];
+            for (int i = 0; i < 64; i++) addresses[i] = -1;
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                try { addresses = System.Text.Json.JsonSerializer.Deserialize<int[]>(json) ?? addresses; } catch {}
+            }
+
             for (int i = 0; i < 64; i++)
             {
                 int floor = (i / 16) + 1;
@@ -58,7 +66,7 @@ public partial class SettingsForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Lỗi tải cài đặt: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Lỗi tải danh sách địa chỉ: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -159,7 +167,13 @@ public partial class SettingsForm : Form
 
         try
         {
-            await _settingsRepo.SavePlcAddressesAsync(_rackId, addresses);
+            string json = System.Text.Json.JsonSerializer.Serialize(addresses);
+            using var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseInitializer.ConnectionString);
+            await Dapper.SqlMapper.ExecuteAsync(conn, @"
+                INSERT INTO Settings (Key, Value) VALUES (@Key, @Value)
+                ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value", 
+                new { Key = $"PlcAddresses_{_rackId}", Value = json });
+
             PlcTags.LoadAddresses(_rackId, addresses);
             MessageBox.Show("Lưu cấu hình thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             this.Close();

@@ -132,8 +132,8 @@ public partial class ScannerForm : Form
                         
                         int localOffset = addr - minAddress;
                         
-                        uint rawVal = S7.Net.Types.DWord.FromByteArray(
-                            new byte[] { buffer[localOffset], buffer[localOffset + 1], buffer[localOffset + 2], buffer[localOffset + 3] }
+                        uint rawVal = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(
+                            new ReadOnlySpan<byte>(buffer, localOffset, 4)
                         );
                         
                         var (sanitizedVal, isGood) = _sanitizer.Sanitize(addr, rawVal, isFirstRun);

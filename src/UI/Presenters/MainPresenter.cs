@@ -19,7 +19,6 @@ public class MainPresenter : IDisposable
     private readonly PlcManager _plcManager;
     private readonly TestRepository _testRepo;
     private readonly ExcelReportService _excelService;
-    private readonly SettingsRepository _settingsRepo;
     
     private ConcurrentDictionary<string, StateMachine> _stateMachines = new();
     private Dictionary<string, CancellationTokenSource> _pollingTokens = new();
@@ -30,14 +29,12 @@ public class MainPresenter : IDisposable
         IMainView view, 
         PlcManager plcManager, 
         TestRepository testRepo,
-        ExcelReportService excelService,
-        SettingsRepository settingsRepo)
+        ExcelReportService excelService)
     {
         _view = view;
         _plcManager = plcManager;
         _testRepo = testRepo;
         _excelService = excelService;
-        _settingsRepo = settingsRepo;
         
         // Initialize 256 state machines (4 racks * 64 hooks)
         foreach (var rackId in _rackIds)
@@ -74,16 +71,25 @@ public class MainPresenter : IDisposable
         var history = await _testRepo.GetAllTestRecordsAsync();
         _view.LoadHistoryData(history);
         
+        using var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseInitializer.ConnectionString);
         foreach (var rackId in _rackIds)
         {
-            var addresses = await _settingsRepo.GetPlcAddressesAsync(rackId);
+            var json = await Dapper.SqlMapper.QueryFirstOrDefaultAsync<string>(conn, "SELECT Value FROM Settings WHERE Key = @Key", new { Key = $"PlcAddresses_{rackId}" });
+            int[] addresses = new int[64];
+            for (int i = 0; i < 64; i++) addresses[i] = -1;
+            if (!string.IsNullOrEmpty(json)) { try { addresses = System.Text.Json.JsonSerializer.Deserialize<int[]>(json) ?? addresses; } catch {} }
             PlcTags.LoadAddresses(rackId, addresses);
         }
     }
 
     private async void OnConnectRackClicked(string rackId, string ipAddress)
     {
-        await _settingsRepo.SaveRackIpAsync(rackId, ipAddress);
+        using var conn = new Microsoft.Data.Sqlite.SqliteConnection(DatabaseInitializer.ConnectionString);
+        await Dapper.SqlMapper.ExecuteAsync(conn, @"
+            INSERT INTO Settings (Key, Value) VALUES (@Key, @Value)
+            ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value", 
+            new { Key = $"PlcIpAddress_{rackId}", Value = ipAddress });
+
         bool connected = await _plcManager.ConnectRackAsync(rackId, ipAddress);
         
         _view.UpdateRackConnectionStatus(rackId, connected);
@@ -247,7 +253,7 @@ public class MainPresenter : IDisposable
 
     private void OnSettingsClicked(string rackId)
     {
-        using var settingsForm = new SettingsForm(_settingsRepo, rackId);
+        using var settingsForm = new SettingsForm(rackId);
         settingsForm.ShowDialog();
     }
 
@@ -263,6 +269,5 @@ public class MainPresenter : IDisposable
         StopAllPolling();
         _plcManager.Dispose();
         _testRepo.Dispose();
-        _settingsRepo.Dispose();
     }
 }

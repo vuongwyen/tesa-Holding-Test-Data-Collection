@@ -84,12 +84,12 @@ public class ExcelReportService
         }
         catch (IOException ex)
         {
-            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Excel Export Error] Lỗi file đang mở hoặc cấp quyền: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[Excel Export Error] Lỗi file đang mở hoặc cấp quyền: {ex.Message}");
             return false;
         }
         catch (Exception ex)
         {
-            TapeAdhesionApp.Core.Utils.SimpleLogger.LogError($"[Excel Export Error] Lỗi không xác định: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[Excel Export Error] Lỗi không xác định: {ex.Message}");
             return false;
         }
     }
