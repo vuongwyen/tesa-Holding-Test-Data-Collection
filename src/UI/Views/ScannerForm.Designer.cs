@@ -13,6 +13,7 @@ partial class ScannerForm
     private Label lblStatus;
     private Label lblInstruction;
     private CheckBox chkShowRawData;
+    private Button btnSearchValue;
 
     protected override void Dispose(bool disposing)
     {
@@ -32,6 +33,7 @@ partial class ScannerForm
         this.lblStatus = new Label();
         this.lblInstruction = new Label();
         this.chkShowRawData = new CheckBox();
+        this.btnSearchValue = new Button();
         this.SuspendLayout();
 
         // Form Settings
@@ -83,6 +85,16 @@ partial class ScannerForm
         this.lstLogs.Font = new Font("Consolas", 11F);
         this.lstLogs.IntegralHeight = false;
 
+        // btnSearchValue
+        this.btnSearchValue.Text = "TRUY VẾT";
+        this.btnSearchValue.Location = new Point(10, 460);
+        this.btnSearchValue.Size = new Size(150, 40);
+        this.btnSearchValue.Font = boldFont;
+        this.btnSearchValue.BackColor = Color.FromArgb(40, 167, 69); // Green
+        this.btnSearchValue.ForeColor = Color.White;
+        this.btnSearchValue.FlatStyle = FlatStyle.Flat;
+        this.btnSearchValue.Click += new System.EventHandler(this.BtnSearchValue_Click);
+
         // btnApply
         this.btnApply.Text = "COPY ĐỊA CHỈ CUỐI";
         this.btnApply.Location = new Point(420, 460);
@@ -102,6 +114,7 @@ partial class ScannerForm
         this.Controls.Add(this.chkShowRawData);
         this.Controls.Add(this.lstLogs);
         this.Controls.Add(this.btnApply);
+        this.Controls.Add(this.btnSearchValue);
         this.Name = "ScannerForm";
         this.Text = "PLC Address Scanner (Dò mìn)";
         this.StartPosition = FormStartPosition.CenterParent;

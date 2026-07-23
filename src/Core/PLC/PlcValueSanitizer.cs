@@ -46,14 +46,7 @@ public class PlcValueSanitizer
             oldValue = 0;
         }
 
-        // Tình huống 1: Reset thật
-        if (currentValue == 0)
-        {
-            _oldValues[address] = 0;
-            _rejectCounters[address] = 0;
-            _justReleasedJump[address] = false;
-            return (0, true);
-        }
+
 
         // Tình huống 2: Đứng im
         if (currentValue == oldValue)

@@ -43,12 +43,6 @@ public partial class ScannerForm : Form
             return;
         }
 
-        var invalidAddresses = addressesToScan.Where(a => a % 4 != 0).ToList();
-        if (invalidAddresses.Count > 0)
-        {
-            MessageBox.Show($"Các địa chỉ sau không hợp lệ (không chia hết cho 4): {string.Join(", ", invalidAddresses)}\nVui lòng sửa lại trước khi quét.", "Lỗi Cấu Hình", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return;
-        }
 
         if (!_plcManager.IsConnected)
         {
@@ -255,5 +249,90 @@ public partial class ScannerForm : Form
         StopScan();
         _plcManager.Disconnect();
         _plcManager.Dispose();
+    }
+    private async void BtnSearchValue_Click(object sender, EventArgs e)
+    {
+        string? inputStr = Prompt.ShowDialog("Nhập giá trị thời gian (PHÚT) cần tìm:", "Truy vết Giá trị");
+        if (string.IsNullOrWhiteSpace(inputStr) || !int.TryParse(inputStr, out int minutes)) return;
+
+        uint targetRaw = (uint)(minutes * 600);
+        uint tolerance = 600; // +- 1 minute tolerance
+
+        lblStatus.Text = $"Trạng thái: Đang truy vết giá trị ~ {minutes} phút (Raw: {targetRaw})...";
+        lblStatus.ForeColor = Color.Orange;
+        lstLogs.Items.Clear();
+        lstLogs.Items.Add($"Bắt đầu quét tìm giá trị Raw ~ {targetRaw} (+- {tolerance})");
+
+        try
+        {
+            // Quét VD0 đến VD8000
+            int startAddress = 0;
+            int totalBytes = 8000;
+            int maxPdu = 200;
+            
+            var results = new List<string>();
+
+            for (int offset = 0; offset < totalBytes; offset += maxPdu)
+            {
+                int readLen = Math.Min(maxPdu, totalBytes - offset);
+                var buffer = await _plcManager.ReadRawBytesAsync(startAddress + offset, readLen);
+                
+                if (buffer != null)
+                {
+                    for (int i = 0; i <= buffer.Length - 4; i++)
+                    {
+                        uint val = System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(
+                            new ReadOnlySpan<byte>(buffer, i, 4)
+                        );
+
+                        if (Math.Abs((long)val - targetRaw) <= tolerance)
+                        {
+                            int foundAddr = startAddress + offset + i;
+                            double foundMin = val / 600.0;
+                            results.Add($"[VD{foundAddr}] => Raw: {val} (~ {foundMin:F1} phút)");
+                        }
+                    }
+                }
+            }
+
+            if (results.Count > 0)
+            {
+                lstLogs.Items.Add($"TÌM THẤY {results.Count} KẾT QUẢ:");
+                foreach (var r in results) lstLogs.Items.Add(r);
+            }
+            else
+            {
+                lstLogs.Items.Add("Không tìm thấy địa chỉ nào khớp.");
+            }
+            
+            lblStatus.Text = "Trạng thái: Đã truy vết xong.";
+            lblStatus.ForeColor = Color.Green;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Lỗi truy vết: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            lblStatus.Text = "Trạng thái: Lỗi";
+            lblStatus.ForeColor = Color.Red;
+        }
+    }
+}
+
+public static class Prompt
+{
+    public static string? ShowDialog(string text, string caption)
+    {
+        Form prompt = new Form()
+        {
+            Width = 400, Height = 170, FormBorderStyle = FormBorderStyle.FixedDialog,
+            Text = caption, StartPosition = FormStartPosition.CenterParent
+        };
+        Label textLabel = new Label() { Left = 20, Top = 20, Text = text, Width = 350 };
+        TextBox textBox = new TextBox() { Left = 20, Top = 50, Width = 340 };
+        Button confirmation = new Button() { Text = "OK", Left = 260, Width = 100, Top = 80, DialogResult = DialogResult.OK };
+        prompt.Controls.Add(textBox);
+        prompt.Controls.Add(confirmation);
+        prompt.Controls.Add(textLabel);
+        prompt.AcceptButton = confirmation;
+        return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : null;
     }
 }

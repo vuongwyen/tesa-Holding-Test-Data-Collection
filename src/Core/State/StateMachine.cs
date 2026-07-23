@@ -27,7 +27,7 @@ public class StateMachine
 
     private uint _lastValue = 0;
     private int _unchangedCycles = 0;
-    private const int DebounceStopThreshold = 50;
+    private const int DebounceStopThreshold = 3;
 
     public StateMachine(string hookId)
     {

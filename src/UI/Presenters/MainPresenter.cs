@@ -206,9 +206,7 @@ public class MainPresenter : IDisposable
         var rowData = _view.GetRowData(rackId, floor, hookIndex);
         if (rowData == null) return;
 
-        // Chỉ lưu DB nếu người dùng đã điền Nart hoặc Batch
-        bool hasInputs = !string.IsNullOrWhiteSpace(rowData.Nart) || !string.IsNullOrWhiteSpace(rowData.Batch);
-        if (!hasInputs) return;
+
 
         var record = new TestRecord
         {
@@ -244,10 +242,24 @@ public class MainPresenter : IDisposable
             history = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Where(history, r => r.RackId == rackId));
         }
 
-        bool exportSuccess = _excelService.ExportReport(history, out string savedFilePath);
-        if (exportSuccess)
+        using var sfd = new SaveFileDialog
         {
-            MessageBox.Show($"Báo cáo được lưu thành công tại:\n{savedFilePath}", "Hoàn thành", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Filter = "Excel Files|*.xlsx",
+            Title = "Lưu báo cáo Excel",
+            FileName = $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+        };
+
+        if (sfd.ShowDialog() == DialogResult.OK)
+        {
+            bool exportSuccess = _excelService.ExportReport(history, sfd.FileName);
+            if (exportSuccess)
+            {
+                MessageBox.Show($"Báo cáo được lưu thành công tại:\n{sfd.FileName}", "Hoàn thành", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Lỗi xuất file. File có thể đang được mở bởi ứng dụng khác.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 

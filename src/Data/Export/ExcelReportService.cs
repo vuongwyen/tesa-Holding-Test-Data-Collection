@@ -24,9 +24,8 @@ public class ExcelReportService
         }
     }
 
-    public bool ExportReport(IEnumerable<TestRecord> records, out string savedFilePath)
+    public bool ExportReport(IEnumerable<TestRecord> records, string filePath)
     {
-        savedFilePath = $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
         try
         {
@@ -79,7 +78,7 @@ public class ExcelReportService
                 workbook.Worksheets.Add("Empty Report");
             }
 
-            workbook.SaveAs(savedFilePath);
+            workbook.SaveAs(filePath);
             return true;
         }
         catch (IOException ex)

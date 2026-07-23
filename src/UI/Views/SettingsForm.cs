@@ -106,12 +106,8 @@ public partial class SettingsForm : Form
                         
                         if (floor >= 1 && floor <= 4 && hook >= 1 && hook <= 16)
                         {
-                            if (int.TryParse(vdAddress, out int addressNum) && addressNum % 4 != 0)
-                            {
-                                MessageBox.Show($"Địa chỉ {vdAddress} tại Tầng {floor} Móc {hook} không hợp lệ (Phải chia hết cho 4). Đã bỏ qua.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                continue;
-                            }
                             
+
                             int index = (floor - 1) * 16 + (hook - 1);
                             _rows[index].Address = vdAddress;
                             matchCount++;
@@ -149,13 +145,6 @@ public partial class SettingsForm : Form
                 string numericPart = new string(System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(val, char.IsDigit)));
                 if (int.TryParse(numericPart, out int num))
                 {
-                    if (num % 4 != 0)
-                    {
-                        int floor = (i / 16) + 1;
-                        int hook = (i % 16) + 1;
-                        MessageBox.Show($"Lỗi tại Tầng {floor} - Móc {hook}: Địa chỉ VD{num} không hợp lệ. Các địa chỉ VD phải chia hết cho 4 (VD: 100, 104, 108...).", "Lỗi Cấu Hình", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
                     addresses[i] = num;
                 }
                 else

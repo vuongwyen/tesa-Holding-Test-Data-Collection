@@ -29,6 +29,8 @@ partial class MainForm
         this.cmbFilterRackId = new ComboBox();
         this.btnDeleteSelected = new Button();
         this.btnExportHistory = new Button();
+        this.btnBackupDb = new Button();
+        this.btnRestoreDb = new Button();
         this.dgvHistory = new DataGridView();
         this.tabPlcConnections = new TabPage();
         this.pnlPlcConnections = new FlowLayoutPanel();
@@ -90,8 +92,10 @@ partial class MainForm
         this.pnlHistoryToolbar.Controls.Add(this.txtSearchHistory);
         this.pnlHistoryToolbar.Controls.Add(this.lblFilter);
         this.pnlHistoryToolbar.Controls.Add(this.cmbFilterRackId);
-        this.pnlHistoryToolbar.Controls.Add(this.btnExportHistory);
         this.pnlHistoryToolbar.Controls.Add(this.btnDeleteSelected);
+        this.pnlHistoryToolbar.Controls.Add(this.btnExportHistory);
+        this.pnlHistoryToolbar.Controls.Add(this.btnBackupDb);
+        this.pnlHistoryToolbar.Controls.Add(this.btnRestoreDb);
         this.pnlHistoryToolbar.Dock = DockStyle.Top;
         this.pnlHistoryToolbar.Location = new Point(3, 3);
         this.pnlHistoryToolbar.Name = "pnlHistoryToolbar";
@@ -133,6 +137,28 @@ partial class MainForm
         this.btnExportHistory.Size = new Size(160, 30);
         this.btnExportHistory.Text = "Xuất báo cáo (.xlsx)";
         this.btnExportHistory.UseVisualStyleBackColor = false;
+
+        // btnBackupDb
+        this.btnBackupDb.BackColor = Color.FromArgb(40, 167, 69);
+        this.btnBackupDb.ForeColor = Color.White;
+        this.btnBackupDb.FlatStyle = FlatStyle.Flat;
+        this.btnBackupDb.FlatAppearance.BorderSize = 0;
+        this.btnBackupDb.Location = new Point(810, 10);
+        this.btnBackupDb.Name = "btnBackupDb";
+        this.btnBackupDb.Size = new Size(100, 30);
+        this.btnBackupDb.Text = "Sao lưu DB";
+        this.btnBackupDb.UseVisualStyleBackColor = false;
+
+        // btnRestoreDb
+        this.btnRestoreDb.BackColor = Color.FromArgb(255, 193, 7);
+        this.btnRestoreDb.ForeColor = Color.Black;
+        this.btnRestoreDb.FlatStyle = FlatStyle.Flat;
+        this.btnRestoreDb.FlatAppearance.BorderSize = 0;
+        this.btnRestoreDb.Location = new Point(920, 10);
+        this.btnRestoreDb.Name = "btnRestoreDb";
+        this.btnRestoreDb.Size = new Size(120, 30);
+        this.btnRestoreDb.Text = "Khôi phục DB";
+        this.btnRestoreDb.UseVisualStyleBackColor = false;
 
         // btnDeleteSelected
         this.btnDeleteSelected.BackColor = Color.White;
@@ -234,6 +260,8 @@ partial class MainForm
     private ComboBox cmbFilterRackId;
     private Button btnDeleteSelected;
     private Button btnExportHistory;
+    private Button btnBackupDb;
+    private Button btnRestoreDb;
     private DataGridView dgvHistory;
     private TabPage tabPlcConnections;
     private FlowLayoutPanel pnlPlcConnections;

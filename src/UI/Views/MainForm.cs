@@ -4,7 +4,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.IO;
+using Microsoft.Data.Sqlite;
 using TapeAdhesionApp.Core.Models;
+using TapeAdhesionApp.Data.Database;
 using TapeAdhesionApp.UI.Views.Controls;
 
 namespace TapeAdhesionApp.UI.Views;
@@ -66,6 +69,8 @@ public partial class MainForm : Form, IMainView
 
         btnDeleteSelected.Click += BtnDeleteSelected_Click;
         btnExportHistory.Click += BtnExportHistory_Click;
+        btnBackupDb.Click += BtnBackupDb_Click;
+        btnRestoreDb.Click += BtnRestoreDb_Click;
 
         dgvHistory.CellFormatting += DgvHistory_CellFormatting;
     }
@@ -273,6 +278,62 @@ public partial class MainForm : Form, IMainView
         else
         {
             action();
+        }
+    }
+    private void BtnBackupDb_Click(object? sender, EventArgs e)
+    {
+        using var sfd = new SaveFileDialog
+        {
+            Filter = "SQLite DB|*.db",
+            Title = "Lưu bản sao DB",
+            FileName = $"TesaBackup_{DateTime.Now:yyyyMMdd_HHmmss}.db"
+        };
+
+        if (sfd.ShowDialog() == DialogResult.OK)
+        {
+            try
+            {
+                using var source = new SqliteConnection(DatabaseInitializer.ConnectionString);
+                source.Open();
+                using var destination = new SqliteConnection($"Data Source={sfd.FileName}");
+                source.BackupDatabase(destination);
+                MessageBox.Show("Sao lưu thành công!", "Hoàn thành", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi sao lưu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    private void BtnRestoreDb_Click(object? sender, EventArgs e)
+    {
+        if (MessageBox.Show("Khôi phục sẽ ghi đè dữ liệu hiện tại và yêu cầu khởi động lại App. Bạn có chắc chắn?", "Cảnh báo", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+        {
+            using var ofd = new OpenFileDialog
+            {
+                Filter = "SQLite DB|*.db",
+                Title = "Chọn file DB khôi phục"
+            };
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    SqliteConnection.ClearAllPools();
+                    using var source = new SqliteConnection($"Data Source={ofd.FileName}");
+                    source.Open();
+                    using var destination = new SqliteConnection(DatabaseInitializer.ConnectionString);
+                    source.BackupDatabase(destination);
+                    
+                    MessageBox.Show("Khôi phục thành công! App sẽ tự động thoát. Vui lòng mở lại.", "Hoàn thành", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Application.Exit();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khôi phục: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
