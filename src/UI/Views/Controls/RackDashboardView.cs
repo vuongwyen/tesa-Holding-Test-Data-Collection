@@ -55,6 +55,7 @@ public class RackDashboardView : UserControl
         this.dgvMeasurements.Size = new Size(800, 600);
         this.dgvMeasurements.TabIndex = 0;
         this.dgvMeasurements.CellFormatting += DgvMeasurements_CellFormatting;
+        this.dgvMeasurements.CellEndEdit += DgvMeasurements_CellEndEdit;
 
         this.Controls.Add(this.dgvMeasurements);
         this.Name = "RackDashboardView";
@@ -156,6 +157,8 @@ public class RackDashboardView : UserControl
         }
     }
 
+    public event Action<MeasurementRow>? RowInfoChanged;
+
     public void UpdateRowState(int floor, int hookIndex, uint value, string state)
     {
         if (InvokeRequired)
@@ -167,9 +170,31 @@ public class RackDashboardView : UserControl
         var row = GetRow(floor, hookIndex);
         if (row != null)
         {
-            row.PlcValue = value;
-            row.State = state;
-            // BindingList will auto notify DataGridView
+            bool stateChanged = row.State != state;
+            bool valueChanged = row.PlcValue != value;
+            if (!stateChanged && !valueChanged) return;
+
+            int rowIndex = (floor - 1) * 16 + (hookIndex - 1);
+            bool isEditingThisRow = dgvMeasurements.IsCurrentCellInEditMode && 
+                                    dgvMeasurements.CurrentCell?.RowIndex == rowIndex;
+
+            if (isEditingThisRow)
+            {
+                row.SetQuietly(value, state);
+                if (rowIndex >= 0 && rowIndex < dgvMeasurements.Rows.Count)
+                {
+                    dgvMeasurements.InvalidateRow(rowIndex);
+                }
+            }
+            else
+            {
+                row.PlcValue = value;
+                row.State = state;
+                if (stateChanged && rowIndex >= 0 && rowIndex < dgvMeasurements.Rows.Count)
+                {
+                    dgvMeasurements.InvalidateRow(rowIndex);
+                }
+            }
         }
     }
 
@@ -188,6 +213,15 @@ public class RackDashboardView : UserControl
             row.Batch = "";
             row.State = "IDLE";
             row.PlcValue = 0;
+        }
+    }
+
+    private void DgvMeasurements_CellEndEdit(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex >= 0 && e.RowIndex < _rows.Count)
+        {
+            var row = _rows[e.RowIndex];
+            RowInfoChanged?.Invoke(row);
         }
     }
 }

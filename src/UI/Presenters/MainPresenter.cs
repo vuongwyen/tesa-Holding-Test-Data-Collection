@@ -58,6 +58,7 @@ public class MainPresenter : IDisposable
         _view.ScannerClicked += OnScannerClicked;
         _view.DeleteSelectedRecordsClicked += OnDeleteSelectedRecordsClicked;
         _view.ExportHistoryClicked += OnExportHistoryClicked;
+        _view.RowInfoChanged += OnRowInfoChanged;
         
         if (_view is Form form)
         {
@@ -274,6 +275,23 @@ public class MainPresenter : IDisposable
         var plcService = _plcManager.GetService(rackId);
         using var scannerForm = new ScannerForm(rackId, plcService);
         scannerForm.ShowDialog();
+    }
+
+    private async void OnRowInfoChanged(MeasurementRow rowData)
+    {
+        await _testRepo.UpdateLatestTestRecordInfoAsync(
+            rowData.HookId,
+            rowData.Batch,
+            rowData.Nart,
+            rowData.Tester,
+            rowData.SamplePosition);
+
+        _view.UpdateRecordInfoInHistory(
+            rowData.HookId,
+            rowData.Batch,
+            rowData.Nart,
+            rowData.Tester,
+            rowData.SamplePosition);
     }
 
     public void Dispose()

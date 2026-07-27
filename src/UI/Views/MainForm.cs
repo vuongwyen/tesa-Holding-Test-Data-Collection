@@ -39,6 +39,7 @@ public partial class MainForm : Form, IMainView
 
             // 1. Create Dashboard View
             var dashboard = new RackDashboardView(rackId) { Dock = DockStyle.Fill };
+            dashboard.RowInfoChanged += (row) => RowInfoChanged?.Invoke(row);
             _rackDashboards[rackId] = dashboard;
             
             var tabPage = new TabPage(rackId) { Name = rackId };
@@ -139,6 +140,7 @@ public partial class MainForm : Form, IMainView
     public event Action? LoadHistory;
     public event Action<List<int>>? DeleteSelectedRecordsClicked;
     public event Action<string?>? ExportHistoryClicked;
+    public event Action<MeasurementRow>? RowInfoChanged;
 
     // --- History Logic ---
     public void LoadHistoryData(IEnumerable<TestRecord> records)
@@ -156,6 +158,22 @@ public partial class MainForm : Form, IMainView
         {
             _allRecords.Insert(0, record);
             ApplyFilter();
+        });
+    }
+
+    public void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition)
+    {
+        InvokeOnUI(() =>
+        {
+            var latest = _allRecords.FirstOrDefault(r => r.HookId == hookId);
+            if (latest != null)
+            {
+                latest.BatchCode = batch;
+                latest.NartCode = nart;
+                latest.Tester = tester;
+                latest.SamplePosition = samplePosition;
+                dgvHistory.Refresh();
+            }
         });
     }
 

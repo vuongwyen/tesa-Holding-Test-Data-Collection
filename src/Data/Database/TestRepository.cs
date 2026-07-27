@@ -42,6 +42,21 @@ public class TestRepository : IDisposable
         });
     }
 
+    public async Task UpdateLatestTestRecordInfoAsync(string hookId, string batch, string nart, string tester, string samplePosition)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        string sql = @"
+            UPDATE TestRecords 
+            SET BatchCode = @BatchCode, NartCode = @NartCode, Tester = @Tester, SamplePosition = @SamplePosition
+            WHERE Id = (
+                SELECT Id FROM TestRecords 
+                WHERE HookId = @HookId 
+                ORDER BY CompletedAt DESC 
+                LIMIT 1
+            )";
+        await connection.ExecuteAsync(sql, new { HookId = hookId, BatchCode = batch, NartCode = nart, Tester = tester, SamplePosition = samplePosition });
+    }
+
     public async Task<IEnumerable<TestRecord>> GetAllTestRecordsAsync()
     {
         using var connection = new SqliteConnection(_connectionString);

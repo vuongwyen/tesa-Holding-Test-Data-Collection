@@ -59,6 +59,12 @@ public class MeasurementRow : INotifyPropertyChanged
         set { if (_samplePosition != value) { _samplePosition = value; OnPropertyChanged(nameof(SamplePosition)); } }
     }
 
+    public void SetQuietly(uint plcValue, string state)
+    {
+        _plcValue = plcValue;
+        _state = state;
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged(string propertyName)
     {

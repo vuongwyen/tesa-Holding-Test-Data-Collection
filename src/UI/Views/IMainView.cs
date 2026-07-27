@@ -14,6 +14,7 @@ public interface IMainView
     event Action LoadHistory;
     event Action<List<int>> DeleteSelectedRecordsClicked;
     event Action<string?> ExportHistoryClicked; // string? rackId (null = all)
+    event Action<MeasurementRow> RowInfoChanged;
 
     // Methods
     void UpdateRackConnectionStatus(string rackId, bool isConnected);
@@ -24,4 +25,5 @@ public interface IMainView
     // History
     void LoadHistoryData(IEnumerable<TestRecord> records);
     void AddTestRecord(TestRecord record);
+    void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition);
 }

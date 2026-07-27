@@ -51,6 +51,17 @@ public class StateMachine
             case HookState.Running:
                 if (currentValue == 0)
                 {
+                    if (_lastValue > 0)
+                    {
+                        CurrentState = HookState.Completed;
+                        OnTestCompleted?.Invoke(this, new TestCompletedEventArgs
+                        {
+                            HookId = this.HookId,
+                            DropTime = _lastValue,
+                            LastValue = _lastValue,
+                            CompletedAt = DateTime.Now
+                        });
+                    }
                     CurrentState = HookState.Idle;
                     _unchangedCycles = 0;
                 }
