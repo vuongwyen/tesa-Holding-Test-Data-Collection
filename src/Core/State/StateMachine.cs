@@ -28,6 +28,8 @@ public class StateMachine
     private uint _lastValue = 0;
     private int _unchangedCycles = 0;
     private const int DebounceStopThreshold = 3;
+    private bool _isFirstValue = true;
+    private bool _suppressFirstComplete = false;
 
     public StateMachine(string hookId)
     {
@@ -37,6 +39,45 @@ public class StateMachine
     public void ProcessValue(uint currentValue, bool isGood = true)
     {
         if (!isGood) return; // Bỏ qua nhịp bị nhiễu, không đếm vào debounce
+
+        if (_isFirstValue)
+        {
+            _isFirstValue = false;
+            if (currentValue > 0)
+            {
+                CurrentState = HookState.Running;
+                _suppressFirstComplete = true;
+                _lastValue = currentValue;
+                _unchangedCycles = 0;
+                return;
+            }
+        }
+
+        if (_suppressFirstComplete)
+        {
+            if (currentValue > _lastValue)
+            {
+                _suppressFirstComplete = false;
+                _lastValue = currentValue;
+                _unchangedCycles = 0;
+            }
+            else if (currentValue == _lastValue)
+            {
+                _unchangedCycles++;
+                if (_unchangedCycles >= DebounceStopThreshold)
+                {
+                    CurrentState = HookState.Completed;
+                    _suppressFirstComplete = false;
+                }
+            }
+            else if (currentValue == 0)
+            {
+                CurrentState = HookState.Idle;
+                _suppressFirstComplete = false;
+                _unchangedCycles = 0;
+            }
+            return;
+        }
 
         switch (CurrentState)
         {

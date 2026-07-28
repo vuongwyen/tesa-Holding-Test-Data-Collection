@@ -23,6 +23,7 @@ public partial class MainForm : Form, IMainView
     {
         InitializeComponent();
         TapeAdhesionApp.UI.Utils.ControlExtensions.EnableDoubleBuffered(dgvHistory);
+        SetupHistoryColumns();
         InitializeRacks();
         InitializeHistoryToolbar();
 
@@ -76,6 +77,26 @@ public partial class MainForm : Form, IMainView
         dgvHistory.CellFormatting += DgvHistory_CellFormatting;
     }
 
+    private void SetupHistoryColumns()
+    {
+        dgvHistory.AutoGenerateColumns = false;
+        dgvHistory.Columns.Clear();
+
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "RackId", HeaderText = "Giàn", FillWeight = 80 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "HookId", HeaderText = "Vị trí Móc", FillWeight = 120 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "BatchCode", HeaderText = "Mã Batch", FillWeight = 100 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NartCode", HeaderText = "Mã Nart", FillWeight = 100 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Tester", HeaderText = "Người kiểm tra", FillWeight = 120 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SamplePosition", HeaderText = "Vị trí mẫu", FillWeight = 100 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "DropTime", HeaderText = "Thời gian rơi", FillWeight = 120 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CompletedAt", HeaderText = "Thời điểm hoàn thành", FillWeight = 150 });
+
+        if (dgvHistory.Columns.Count > 7)
+        {
+            dgvHistory.Columns[7].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm:ss";
+        }
+    }
+
     private void DgvHistory_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
         if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
@@ -83,7 +104,7 @@ public partial class MainForm : Form, IMainView
             var column = dgvHistory.Columns[e.ColumnIndex];
             if (column.DataPropertyName == "DropTime" && e.Value is uint msValue)
             {
-                e.Value = (msValue / 60000.0).ToString("F2") + " phút";
+                e.Value = (msValue / 600.0).ToString("F2") + " phút";
                 e.FormattingApplied = true;
             }
         }
@@ -197,7 +218,14 @@ public partial class MainForm : Form, IMainView
                 (r.Tester != null && r.Tester.ToLower().Contains(searchText)));
         }
 
-        dgvHistory.DataSource = new BindingList<TestRecord>(filtered.ToList());
+        var sorted = filtered
+            .OrderByDescending(r => r.CompletedAt)
+            .ThenBy(r => r.RackId)
+            .ThenBy(r => r.Floor)
+            .ThenBy(r => r.HookIndex)
+            .ToList();
+
+        dgvHistory.DataSource = new BindingList<TestRecord>(sorted);
     }
 
     private void BtnDeleteSelected_Click(object? sender, EventArgs e)
