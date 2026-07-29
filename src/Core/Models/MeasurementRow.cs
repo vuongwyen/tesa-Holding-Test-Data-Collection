@@ -11,6 +11,10 @@ public class MeasurementRow : INotifyPropertyChanged
     private uint _plcValue;
     private string _state = "IDLE";
     private string _samplePosition = string.Empty;
+    private string _testCondition = string.Empty;
+    private string _sampleNote = string.Empty;
+    private DateTime? _startedAt;
+    private DateTime? _completedAt;
 
     public string RackId { get; set; } = string.Empty;
     public int Floor { get; set; }
@@ -57,6 +61,56 @@ public class MeasurementRow : INotifyPropertyChanged
     {
         get => _samplePosition;
         set { if (_samplePosition != value) { _samplePosition = value; OnPropertyChanged(nameof(SamplePosition)); } }
+    }
+
+    public string TestCondition
+    {
+        get => _testCondition;
+        set { if (_testCondition != value) { _testCondition = value; OnPropertyChanged(nameof(TestCondition)); } }
+    }
+
+    public string SampleNote
+    {
+        get => _sampleNote;
+        set { if (_sampleNote != value) { _sampleNote = value; OnPropertyChanged(nameof(SampleNote)); } }
+    }
+
+    public DateTime? StartedAt
+    {
+        get => _startedAt;
+        set { if (_startedAt != value) { _startedAt = value; OnPropertyChanged(nameof(StartedAt)); OnPropertyChanged(nameof(StartedAtText)); } }
+    }
+
+    public string StartedAtText => _startedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "";
+
+    public DateTime? CompletedAt
+    {
+        get => _completedAt;
+        set { if (_completedAt != value) { _completedAt = value; OnPropertyChanged(nameof(CompletedAt)); OnPropertyChanged(nameof(CompletedAtText)); } }
+    }
+
+    public string CompletedAtText => _completedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "";
+
+    public void UpdateTimestampsFromState(string newState, uint valueTicks)
+    {
+        if (_state != "RUNNING" && newState == "RUNNING")
+        {
+            StartedAt = DateTime.Now.AddMilliseconds(-valueTicks * 100);
+            CompletedAt = null;
+        }
+        else if (_state != "COMPLETED" && newState == "COMPLETED")
+        {
+            CompletedAt = DateTime.Now;
+            if (_startedAt == null)
+            {
+                StartedAt = CompletedAt.Value.AddMilliseconds(-valueTicks * 100);
+            }
+        }
+        else if (newState == "IDLE" && _state != "IDLE")
+        {
+            StartedAt = null;
+            CompletedAt = null;
+        }
     }
 
     public void SetQuietly(uint plcValue, string state)

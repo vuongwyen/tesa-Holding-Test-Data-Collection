@@ -76,7 +76,11 @@ public class RackDashboardView : UserControl
         dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Tester", HeaderText = "Tester", FillWeight = 100 });
         dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Location", HeaderText = "Vị trí", ReadOnly = true, FillWeight = 150 });
         dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SamplePosition", HeaderText = "Vị trí mẫu", ReadOnly = false, FillWeight = 100 });
+        dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TestCondition", HeaderText = "Điều kiện test", ReadOnly = false, FillWeight = 110 });
+        dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SampleNote", HeaderText = "Số mẫu", ReadOnly = false, FillWeight = 80 });
         dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "PlcValue", HeaderText = "Thời gian (Phút)", ReadOnly = true, FillWeight = 80 });
+        dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StartedAtText", HeaderText = "Bắt đầu (Treo tạ)", ReadOnly = true, FillWeight = 130 });
+        dgvMeasurements.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CompletedAtText", HeaderText = "Kết thúc (Rớt tạ)", ReadOnly = true, FillWeight = 130 });
 
         dgvMeasurements.DataSource = _rows;
     }
@@ -170,6 +174,7 @@ public class RackDashboardView : UserControl
         var row = GetRow(floor, hookIndex);
         if (row != null)
         {
+            row.UpdateTimestampsFromState(state, value);
             bool stateChanged = row.State != state;
             bool valueChanged = row.PlcValue != value;
             if (!stateChanged && !valueChanged) return;
@@ -211,6 +216,9 @@ public class RackDashboardView : UserControl
         {
             row.Nart = "";
             row.Batch = "";
+            row.TestCondition = "";
+            row.SampleNote = "";
+            row.UpdateTimestampsFromState("IDLE", 0);
             row.State = "IDLE";
             row.PlcValue = 0;
         }

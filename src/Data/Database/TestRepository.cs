@@ -22,8 +22,8 @@ public class TestRepository : IDisposable
     {
         using var connection = new SqliteConnection(_connectionString);
         string sql = @"
-            INSERT INTO TestRecords (RackId, Floor, HookIndex, HookId, BatchCode, NartCode, Tester, Location, SamplePosition, DropTime, PlcValue, CompletedAt) 
-            VALUES (@RackId, @Floor, @HookIndex, @HookId, @BatchCode, @NartCode, @Tester, @Location, @SamplePosition, @DropTime, @PlcValue, @CompletedAt)";
+            INSERT INTO TestRecords (RackId, Floor, HookIndex, HookId, BatchCode, NartCode, Tester, Location, SamplePosition, TestCondition, SampleNote, DropTime, PlcValue, StartedAt, CompletedAt) 
+            VALUES (@RackId, @Floor, @HookIndex, @HookId, @BatchCode, @NartCode, @Tester, @Location, @SamplePosition, @TestCondition, @SampleNote, @DropTime, @PlcValue, @StartedAt, @CompletedAt)";
         
         await connection.ExecuteAsync(sql, new
         {
@@ -36,25 +36,28 @@ public class TestRepository : IDisposable
             record.Tester,
             record.Location,
             record.SamplePosition,
+            record.TestCondition,
+            record.SampleNote,
             record.DropTime,
             record.PlcValue,
+            StartedAt = record.StartedAt?.ToString("O"),
             CompletedAt = record.CompletedAt.ToString("O") // ISO 8601 format
         });
     }
 
-    public async Task UpdateLatestTestRecordInfoAsync(string hookId, string batch, string nart, string tester, string samplePosition)
+    public async Task UpdateLatestTestRecordInfoAsync(string hookId, string batch, string nart, string tester, string samplePosition, string testCondition = "", string sampleNote = "")
     {
         using var connection = new SqliteConnection(_connectionString);
         string sql = @"
             UPDATE TestRecords 
-            SET BatchCode = @BatchCode, NartCode = @NartCode, Tester = @Tester, SamplePosition = @SamplePosition
+            SET BatchCode = @BatchCode, NartCode = @NartCode, Tester = @Tester, SamplePosition = @SamplePosition, TestCondition = @TestCondition, SampleNote = @SampleNote
             WHERE Id = (
                 SELECT Id FROM TestRecords 
                 WHERE HookId = @HookId 
                 ORDER BY CompletedAt DESC 
                 LIMIT 1
             )";
-        await connection.ExecuteAsync(sql, new { HookId = hookId, BatchCode = batch, NartCode = nart, Tester = tester, SamplePosition = samplePosition });
+        await connection.ExecuteAsync(sql, new { HookId = hookId, BatchCode = batch, NartCode = nart, Tester = tester, SamplePosition = samplePosition, TestCondition = testCondition, SampleNote = sampleNote });
     }
 
     public async Task<IEnumerable<TestRecord>> GetAllTestRecordsAsync()

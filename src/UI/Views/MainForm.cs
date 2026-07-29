@@ -88,12 +88,18 @@ public partial class MainForm : Form, IMainView
         dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "NartCode", HeaderText = "Mã Nart", FillWeight = 100 });
         dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Tester", HeaderText = "Người kiểm tra", FillWeight = 120 });
         dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SamplePosition", HeaderText = "Vị trí mẫu", FillWeight = 100 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "TestCondition", HeaderText = "Điều kiện test", FillWeight = 110 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "SampleNote", HeaderText = "Số mẫu", FillWeight = 90 });
         dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "DropTime", HeaderText = "Thời gian rơi", FillWeight = 120 });
-        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CompletedAt", HeaderText = "Thời điểm hoàn thành", FillWeight = 150 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "StartedAt", HeaderText = "Bắt đầu treo tạ", FillWeight = 150 });
+        dgvHistory.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "CompletedAt", HeaderText = "Kết thúc (rớt tạ)", FillWeight = 150 });
 
-        if (dgvHistory.Columns.Count > 7)
+        foreach (DataGridViewColumn col in dgvHistory.Columns)
         {
-            dgvHistory.Columns[7].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm:ss";
+            if (col.DataPropertyName == "CompletedAt" || col.DataPropertyName == "StartedAt")
+            {
+                col.DefaultCellStyle.Format = "dd/MM/yyyy HH:mm:ss";
+            }
         }
     }
 
@@ -182,7 +188,7 @@ public partial class MainForm : Form, IMainView
         });
     }
 
-    public void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition)
+    public void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition, string testCondition = "", string sampleNote = "")
     {
         InvokeOnUI(() =>
         {
@@ -193,6 +199,8 @@ public partial class MainForm : Form, IMainView
                 latest.NartCode = nart;
                 latest.Tester = tester;
                 latest.SamplePosition = samplePosition;
+                latest.TestCondition = testCondition;
+                latest.SampleNote = sampleNote;
                 dgvHistory.Refresh();
             }
         });

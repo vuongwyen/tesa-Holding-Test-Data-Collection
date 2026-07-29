@@ -25,5 +25,5 @@ public interface IMainView
     // History
     void LoadHistoryData(IEnumerable<TestRecord> records);
     void AddTestRecord(TestRecord record);
-    void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition);
+    void UpdateRecordInfoInHistory(string hookId, string batch, string nart, string tester, string samplePosition, string testCondition = "", string sampleNote = "");
 }

@@ -219,8 +219,12 @@ public class MainPresenter : IDisposable
             NartCode = rowData.Nart,
             Tester = rowData.Tester,
             Location = rowData.Location,
+            SamplePosition = rowData.SamplePosition,
+            TestCondition = rowData.TestCondition,
+            SampleNote = rowData.SampleNote,
             DropTime = e.DropTime,
-            PlcValue = e.LastValue, // Need to add LastValue to TestCompletedEventArgs
+            PlcValue = e.LastValue,
+            StartedAt = rowData.StartedAt ?? DateTime.Now.AddMilliseconds(-e.DropTime * 100),
             CompletedAt = DateTime.Now
         };
 
@@ -284,14 +288,18 @@ public class MainPresenter : IDisposable
             rowData.Batch,
             rowData.Nart,
             rowData.Tester,
-            rowData.SamplePosition);
+            rowData.SamplePosition,
+            rowData.TestCondition,
+            rowData.SampleNote);
 
         _view.UpdateRecordInfoInHistory(
             rowData.HookId,
             rowData.Batch,
             rowData.Nart,
             rowData.Tester,
-            rowData.SamplePosition);
+            rowData.SamplePosition,
+            rowData.TestCondition,
+            rowData.SampleNote);
     }
 
     public void Dispose()

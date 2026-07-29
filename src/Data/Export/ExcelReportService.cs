@@ -41,32 +41,38 @@ public class ExcelReportService
 
                 ws.Cell("A1").Value = $"TAPE ADHESION TEST REPORT - {group.Key}";
                 
-                ws.Cell("A3").Value = "Date / Time";
-                ws.Cell("B3").Value = "Rack";
-                ws.Cell("C3").Value = "Floor";
-                ws.Cell("D3").Value = "Hook";
-                ws.Cell("E3").Value = "Location";
-                ws.Cell("F3").Value = "Vị trí mẫu";
-                ws.Cell("G3").Value = "Tester";
-                ws.Cell("H3").Value = "Batch Code";
-                ws.Cell("I3").Value = "Nart Code";
-                ws.Cell("J3").Value = "Thời gian (Phút)";
-                ws.Cell("K3").Value = "PLC Value (Raw)";
+                ws.Cell("A3").Value = "Bắt đầu (Treo tạ)";
+                ws.Cell("B3").Value = "Kết thúc (Rớt tạ)";
+                ws.Cell("C3").Value = "Rack";
+                ws.Cell("D3").Value = "Floor";
+                ws.Cell("E3").Value = "Hook";
+                ws.Cell("F3").Value = "Location";
+                ws.Cell("G3").Value = "Vị trí mẫu";
+                ws.Cell("H3").Value = "Điều kiện test";
+                ws.Cell("I3").Value = "Số mẫu";
+                ws.Cell("J3").Value = "Tester";
+                ws.Cell("K3").Value = "Batch Code";
+                ws.Cell("L3").Value = "Nart Code";
+                ws.Cell("M3").Value = "Thời gian (Phút)";
+                ws.Cell("N3").Value = "PLC Value (Raw)";
 
                 int currentRow = 4;
                 foreach (var record in group)
                 {
-                    ws.Cell(currentRow, 1).Value = record.CompletedAt.ToString("yyyy-MM-dd HH:mm:ss");
-                    ws.Cell(currentRow, 2).Value = record.RackId;
-                    ws.Cell(currentRow, 3).Value = record.Floor;
-                    ws.Cell(currentRow, 4).Value = record.HookIndex;
-                    ws.Cell(currentRow, 5).Value = record.Location;
-                    ws.Cell(currentRow, 6).Value = record.SamplePosition;
-                    ws.Cell(currentRow, 7).Value = record.Tester;
-                    ws.Cell(currentRow, 8).Value = record.BatchCode;
-                    ws.Cell(currentRow, 9).Value = record.NartCode;
-                    ws.Cell(currentRow, 10).Value = Math.Round(record.DropTime / 600.0, 2); // PLC timer là 100ms -> 1 phút = 600 đơn vị
-                    ws.Cell(currentRow, 11).Value = record.PlcValue;
+                    ws.Cell(currentRow, 1).Value = record.StartedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+                    ws.Cell(currentRow, 2).Value = record.CompletedAt.ToString("yyyy-MM-dd HH:mm:ss");
+                    ws.Cell(currentRow, 3).Value = record.RackId;
+                    ws.Cell(currentRow, 4).Value = record.Floor;
+                    ws.Cell(currentRow, 5).Value = record.HookIndex;
+                    ws.Cell(currentRow, 6).Value = record.Location;
+                    ws.Cell(currentRow, 7).Value = record.SamplePosition;
+                    ws.Cell(currentRow, 8).Value = record.TestCondition;
+                    ws.Cell(currentRow, 9).Value = record.SampleNote;
+                    ws.Cell(currentRow, 10).Value = record.Tester;
+                    ws.Cell(currentRow, 11).Value = record.BatchCode;
+                    ws.Cell(currentRow, 12).Value = record.NartCode;
+                    ws.Cell(currentRow, 13).Value = Math.Round(record.DropTime / 600.0, 2); // PLC timer là 100ms -> 1 phút = 600 đơn vị
+                    ws.Cell(currentRow, 14).Value = record.PlcValue;
                     currentRow++;
                 }
 

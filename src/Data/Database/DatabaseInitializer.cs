@@ -76,7 +76,10 @@ public static class DatabaseInitializer
             "ALTER TABLE TestRecords ADD COLUMN Tester TEXT DEFAULT ''",
             "ALTER TABLE TestRecords ADD COLUMN Location TEXT DEFAULT ''",
             "ALTER TABLE TestRecords ADD COLUMN SamplePosition TEXT DEFAULT ''",
-            "ALTER TABLE TestRecords ADD COLUMN PlcValue INTEGER DEFAULT 0"
+            "ALTER TABLE TestRecords ADD COLUMN PlcValue INTEGER DEFAULT 0",
+            "ALTER TABLE TestRecords ADD COLUMN TestCondition TEXT DEFAULT ''",
+            "ALTER TABLE TestRecords ADD COLUMN SampleNote TEXT DEFAULT ''",
+            "ALTER TABLE TestRecords ADD COLUMN StartedAt TEXT DEFAULT NULL"
         };
         foreach (var cmd in newColumns)
         {

@@ -14,7 +14,10 @@ public class TestRecord
     public string Tester { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string SamplePosition { get; set; } = string.Empty;
+    public string TestCondition { get; set; } = string.Empty;
+    public string SampleNote { get; set; } = string.Empty;
     public uint DropTime { get; set; }
     public uint PlcValue { get; set; }
+    public DateTime? StartedAt { get; set; }
     public DateTime CompletedAt { get; set; }
 }
